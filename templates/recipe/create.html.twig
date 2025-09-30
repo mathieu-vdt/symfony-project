@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle recette{% endblock %}
+
+{% block body %}
+<section class="container mx-auto px-4 py-10">
+  <header class="mb-8">
+    <h1 class="text-3xl font-bold tracking-tight">
+      <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+        Créer une recette
+      </span>
+    </h1>
+    <p class="mt-2 text-sm text-zinc-600">Renseignez les informations ci-dessous.</p>
+  </header>
+
+  {# flashes #}
+  {% for label, messages in app.flashes %}
+    {% for message in messages %}
+      <div class="mb-4 rounded-xl px-4 py-3 text-sm {{ label == 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endfor %}
+
+  <div class="rounded-2xl border border-zinc-200/60 bg-white/80 shadow-sm p-6 max-w-3xl">
+    {{ form_start(form, { attr: { class: 'space-y-6' } }) }}
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div>
+        {{ form_label(form.title, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+        {{ form_widget(form.title, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+        {{ form_errors(form.title) }}
+      </div>
+
+      <div>
+        {{ form_label(form.category, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+        {{ form_widget(form.category, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white' } }) }}
+        {{ form_errors(form.category) }}
+      </div>
+    </div>
+
+    <div>
+      {{ form_label(form.description, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+      {{ form_widget(form.description, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+      {{ form_errors(form.description) }}
+    </div>
+
+    <div>
+      {{ form_label(form.instructions, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+      {{ form_widget(form.instructions, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+      {{ form_errors(form.instructions) }}
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div>
+        {{ form_label(form.prepTime, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+        {{ form_widget(form.prepTime, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+        {{ form_errors(form.prepTime) }}
+      </div>
+
+      <div class="sm:col-span-2">
+        {{ form_label(form.difficulty, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+        {{ form_widget(form.difficulty, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white' } }) }}
+        {{ form_errors(form.difficulty) }}
+      </div>
+    </div>
+
+    <div>
+      {{ form_label(form.ingredients, null, { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+      {# multiselect #}
+      {{ form_widget(form.ingredients, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white', size: 8 } }) }}
+      {{ form_errors(form.ingredients) }}
+      <p class="mt-1 text-xs text-zinc-500">Maintenez Ctrl/Cmd pour sélectionner plusieurs ingrédients.</p>
+    </div>
+
+    <div class="flex items-center gap-3 pt-2">
+      <button class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        Enregistrer
+      </button>
+      <a href="{{ path('app_home') }}" class="text-sm text-zinc-600 hover:text-zinc-800">Annuler</a>
+    </div>
+
+    {{ form_end(form) }}
+  </div>
+</section>
+{% endblock %}
