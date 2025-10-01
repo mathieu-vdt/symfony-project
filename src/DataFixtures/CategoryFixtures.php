@@ -19,7 +19,7 @@ class CategoryFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
-        $labels = ['Entrées', 'Plats principaux', 'Desserts', 'Boissons', 'Vegan', 'Sans gluten'];
+        $labels = ['Starters', 'Main courses', 'Desserts', 'Drinks', 'Vegan', 'Gluten-free'];
         $slugger = new AsciiSlugger();
 
         foreach ($labels as $i => $label) {
@@ -29,7 +29,7 @@ class CategoryFixtures extends Fixture implements FixtureGroupInterface
             $c->setCreatedAt(new \DateTimeImmutable());
 
             $manager->persist($c);
-            // référence pour RecipeFixtures
+            // reference for RecipeFixtures
             $this->addReference(self::REF_PREFIX.$i, $c);
         }
 

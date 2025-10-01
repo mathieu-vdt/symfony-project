@@ -23,6 +23,7 @@ class RecipeFixtures extends Fixture implements FixtureGroupInterface, Dependent
         return [
             CategoryFixtures::class,
             IngredientFixtures::class,
+            UserFixtures::class, // ✅ add this
         ];
     }
 
@@ -30,9 +31,9 @@ class RecipeFixtures extends Fixture implements FixtureGroupInterface, Dependent
     {
         $faker = Factory::create('fr_FR');
 
-        // compter les refs existantes
-        $categoryCount = 6;   // on en a créé 6 dans CategoryFixtures
-        $ingredientCount = 30; // idem IngredientFixtures
+        $categoryCount = 6;
+        $ingredientCount = 30;
+        $userCount = 10;
 
         for ($i = 0; $i < self::COUNT; $i++) {
             $r = new Recipe();
@@ -43,28 +44,32 @@ class RecipeFixtures extends Fixture implements FixtureGroupInterface, Dependent
             $r->setDifficulty($faker->optional()->numberBetween(1, 5));
             $r->setCreatedAt(new \DateTimeImmutable());
 
-            // Catégorie obligatoire (ManyToOne, nullable=false)
+            // Category
             $catIndex = random_int(0, $categoryCount - 1);
-            /** @var \App\Entity\Category $category */
             $category = $this->getReference(CategoryFixtures::REF_PREFIX.$catIndex, \App\Entity\Category::class);
             $r->setCategory($category);
 
-            // Ingrédients (2 à 6, sans doublon)
+            // Ingredients
             $wanted = random_int(2, 6);
             $used = [];
             while (count($used) < $wanted) {
                 $ingIndex = random_int(0, $ingredientCount - 1);
                 if (!in_array($ingIndex, $used, true)) {
                     $used[] = $ingIndex;
-                    /** @var \App\Entity\Ingredient $ing */
                     $ing = $this->getReference(IngredientFixtures::REF_PREFIX.$ingIndex, \App\Entity\Ingredient::class);
                     $r->addIngredient($ing);
                 }
             }
+
+            // Author
+            $userIndex = random_int(0, $userCount - 1);
+            $author = $this->getReference(UserFixtures::REF_PREFIX.$userIndex, \App\Entity\User::class);
+            $r->setAuthor($author);
 
             $manager->persist($r);
         }
 
         $manager->flush();
     }
+
 }

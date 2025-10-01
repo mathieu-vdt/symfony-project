@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Confirm your email</title>
+  </head>
+  <body class="bg-zinc-50 font-sans">
+    <div class="min-h-screen flex items-center justify-center px-4">
+      <div class="max-w-lg w-full bg-white rounded-2xl shadow-sm border border-zinc-200 p-8 text-center">
+        
+        <h1 class="text-2xl font-bold tracking-tight">
+          <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+            Confirm your email
+          </span>
+        </h1>
+
+        <p class="mt-4 text-sm text-zinc-600">
+          Please confirm your email address by clicking the button below.
+        </p>
+
+        <div class="mt-6">
+          <a href="{{ signedUrl|raw }}"
+             class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2.5 text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Confirm my Email
+          </a>
+        </div>
+
+        <p class="mt-4 text-xs text-zinc-500">
+          This link will expire in 
+          <strong>{{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}</strong>.
+        </p>
+
+        <p class="mt-6 text-sm text-zinc-600">Cheers,<br>The Cookbook Campus Team</p>
+      </div>
+    </div>
+  </body>
+</html>

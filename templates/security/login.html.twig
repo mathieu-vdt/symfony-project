@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+{% block title %}Login{% endblock %}
+
+{% block body %}
+<section class="container mx-auto px-4 py-12">
+  <div class="mx-auto w-full max-w-md">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold tracking-tight">
+        <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+          Sign in
+        </span>
+      </h1>
+      <p class="mt-2 text-sm text-zinc-600">Welcome back! Please enter your credentials.</p>
+    </header>
+
+    <div class="rounded-2xl border border-zinc-200/60 bg-white/90 shadow-sm p-6">
+      {# If authenticator passed an error #}
+      {% if error %}
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ error.messageKey|trans(error.messageData, 'security') }}
+        </div>
+      {% endif %}
+
+      <form method="post" action="{{ path('app_login') }}" class="space-y-5" data-turbo="false">
+        <div>
+          <label for="username" class="block text-sm font-medium mb-1">Username</label>
+          <input type="text" id="username" name="_username"
+                 value="{{ last_username|default('') }}"
+                 autocomplete="username"
+                 required
+                 class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium mb-1">Password</label>
+          <input type="password" id="password" name="_password"
+                 autocomplete="current-password"
+                 required
+                 class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+
+        <div class="flex items-center justify-between">
+          <label class="inline-flex items-center gap-2 text-sm text-zinc-600">
+            <input type="checkbox" name="_remember_me" class="rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500">
+            Remember me
+          </label>
+
+          {# Optional: link to reset password if you have it #}
+          {# <a href="{{ path('app_forgot_password_request') }}" class="text-sm text-indigo-600 hover:text-indigo-700">Forgot password?</a> #}
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit"
+                class="w-full inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          Login
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-zinc-600">
+        New here?
+        <a href="{{ path('app_register') }}" class="font-medium text-indigo-600 hover:text-indigo-700">Create an account</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

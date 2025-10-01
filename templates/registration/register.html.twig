@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+{% block title %}Register{% endblock %}
+
+{% block body %}
+<section class="container mx-auto px-4 py-12">
+  <div class="mx-auto w-full max-w-md">
+    <header class="mb-8 text-center">
+      <h1 class="text-3xl font-bold tracking-tight">
+        <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+          Create your account
+        </span>
+      </h1>
+      <p class="mt-2 text-sm text-zinc-600">Join and start sharing your recipes.</p>
+    </header>
+
+    <div class="rounded-2xl border border-zinc-200/60 bg-white/90 shadow-sm p-6">
+      {{ form_start(registrationForm, { attr: { class: 'space-y-5', 'data-turbo': 'false' } }) }}
+
+        {# Username (if your form has it) #}
+        {% if registrationForm.username is defined %}
+          <div>
+            {{ form_label(registrationForm.username, 'Username', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+            {{ form_widget(registrationForm.username, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+            {{ form_errors(registrationForm.username) }}
+          </div>
+        {% endif %}
+
+        {# Email (if your form has it) #}
+        {% if registrationForm.email is defined %}
+          <div>
+            {{ form_label(registrationForm.email, 'Email', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+            {{ form_widget(registrationForm.email, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+            {{ form_errors(registrationForm.email) }}
+          </div>
+        {% endif %}
+
+        {# Password #}
+        {% if registrationForm.plainPassword is defined %}
+          {# Single field version (newer makers) #}
+          <div>
+            {{ form_label(registrationForm.plainPassword, 'Password', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+            {{ form_widget(registrationForm.plainPassword, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+          </div>
+        {% elseif registrationForm.plainPassword is not defined and registrationForm.plainPassword_first is defined %}
+          {# RepeatedType version (older makers) #}
+          <div>
+            {{ form_label(registrationForm.plainPassword_first, 'Password', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+            {{ form_widget(registrationForm.plainPassword_first, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+            {{ form_errors(registrationForm.plainPassword_first) }}
+          </div>
+          <div>
+            {{ form_label(registrationForm.plainPassword_second, 'Confirm password', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
+            {{ form_widget(registrationForm.plainPassword_second, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
+            {{ form_errors(registrationForm.plainPassword_second) }}
+          </div>
+        {% endif %}
+
+        {# Terms #}
+        {% if registrationForm.agreeTerms is defined %}
+          <div class="flex items-center gap-2">
+            {{ form_widget(registrationForm.agreeTerms, { attr: { class: 'rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500' } }) }}
+            {{ form_label(registrationForm.agreeTerms, 'I agree to the Terms and Privacy Policy', { label_attr: { class: 'text-sm text-zinc-700' } }) }}
+            {{ form_errors(registrationForm.agreeTerms) }}
+          </div>
+        {% endif %}
+
+        <button type="submit"
+                class="w-full inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          Create account
+        </button>
+
+      {{ form_end(registrationForm) }}
+
+      <p class="mt-6 text-center text-sm text-zinc-600">
+        Already have an account?
+        <a href="{{ path('app_login') }}" class="font-medium text-indigo-600 hover:text-indigo-700">Sign in</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content %}
+  <div class="ea-dashboard">
+    <div class="ea-dashboard__content">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-lg border bg-white p-4">
+          <div class="text-sm text-gray-500">Recipes</div>
+          <div class="mt-1 text-2xl font-semibold">{{ recipesCount }}</div>
+        </div>
+        <div class="rounded-lg border bg-white p-4">
+          <div class="text-sm text-gray-500">Categories</div>
+          <div class="mt-1 text-2xl font-semibold">{{ categoriesCount }}</div>
+        </div>
+        <div class="rounded-lg border bg-white p-4">
+          <div class="text-sm text-gray-500">Users</div>
+          <div class="mt-1 text-2xl font-semibold">{{ usersCount }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

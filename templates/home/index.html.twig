@@ -1,82 +1,143 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block body %}
 <section class="container mx-auto px-4 py-10">
   <header class="mb-8">
-    <h1 class="text-3xl font-bold tracking-tight">
-      <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-        Toutes les recettes
-      </span>
-    </h1>
-    <p class="mt-2 text-sm text-zinc-600">Découvrez les dernières idées à cuisiner.</p>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">
+          <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+            All Recipes
+          </span>
+        </h1>
+        <p class="mt-2 text-sm text-zinc-600">Discover fresh ideas to cook today.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        {# --- Search bar (GET) --- #}
+        <form method="get" action="{{ path('app_home') }}" class="flex items-center gap-2">
+          <label for="q" class="sr-only">Search</label>
+          <input
+            type="search"
+            id="q"
+            name="q"
+            value="{{ app.request.get('q') }}"
+            placeholder="Search recipes..."
+            class="w-56 md:w-72 rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+          >
+          <button class="rounded-xl border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">
+            Search
+          </button>
+        </form>
+      </div>
+    </div>
   </header>
 
-{% if recipes is not empty %}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for recipe in recipes %}
-      <article class="relative group rounded-2xl border border-zinc-200 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition overflow-hidden cursor-pointer hover:scale-[1.01]">
-      <a href="{{ path('app_recipe_show', { id: recipe.id }) }}"
-           class=""
-           aria-label="Voir la recette {{ recipe.title }}">
-        {# Image (placeholder) #}
-        <div class="h-40 w-full bg-gradient-to-br from-zinc-100 via-zinc-50 to-white flex items-center justify-center">
-          <div class="text-zinc-400 text-sm">Image</div>
-        </div>
+  {% if recipes is not empty %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for recipe in recipes %}
+        {# Actions pinned to bottom (respect voter permissions) #}
+        {% set can_edit = is_granted('RECIPE_EDIT', recipe) %}
+        {% set can_delete = is_granted('RECIPE_DELETE', recipe) %}
+        {# Uniform card: same structure/height #}
+        <article class="group h-full flex flex-col rounded-2xl border border-zinc-200 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition overflow-hidden">
 
-        <div class="p-5 space-y-4">
-          {% if recipe.category %}
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
-              {{ recipe.category.name }}
-            </span>
-          {% endif %}
-
-          <h3 class="text-xl font-semibold leading-tight group-hover:text-indigo-700 transition">
-            {{ recipe.title }}
-          </h3>
-
-          <p class="text-sm text-zinc-600" style="-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">
-            {{ recipe.description|default('Pas de description') }}
-          </p>
-
-          <div class="flex items-center justify-between text-xs text-zinc-500 pt-2">
-            <div class="flex items-center gap-3">
-              {% if recipe.prepTime %}
-                <span class="inline-flex items-center gap-1">⏱️ {{ recipe.prepTime }} min</span>
-              {% endif %}
-              {% if recipe.createdAt %}
-                <span class="inline-flex items-center gap-1">📅 {{ recipe.createdAt|date('d/m/Y') }}</span>
+          {# Fixed-height image area #}
+          <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" aria-label="View recipe {{ recipe.title }}">
+            <div class="h-40 w-full bg-zinc-50 flex items-center justify-center">
+              {% if recipe.imageName %}
+                <img src="{{ vich_uploader_asset(recipe, 'imageFile') }}"
+                     alt="{{ recipe.title }}"
+                     class="h-40 w-full object-cover">
+              {% else %}
+                <div class="text-zinc-400 text-sm">Image</div>
               {% endif %}
             </div>
+          </a>
 
-            {% set d = recipe.difficulty ?? 0 %}
-            <div class="flex items-center">
-              {% for i in 1..5 %}
-                {% if i <= d %}<span class="text-amber-500">★</span>{% else %}<span class="text-zinc-300">☆</span>{% endif %}
-              {% endfor %}
-            </div>
-          </div>
+          {# Flexible content takes remaining space #}
+          <div class="p-5 flex flex-col flex-1">
+            {% if recipe.category %}
+              <span class="inline-flex w-fit self-start items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+                {{ recipe.category.name }}
+              </span>
+            {% endif %}
 
-          {# Lien Modifier au-dessus de l’overlay (z-20) #}
-          <div class="pt-1">
-            <a href="{{ path('app_recipe_edit', { id: recipe.id }) }}"
-               class="relative z-20 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              Modifier
+            <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" class="block mt-2">
+              <h3 class="text-xl font-semibold leading-tight group-hover:text-indigo-700 transition">
+                {{ recipe.title }}
+              </h3>
             </a>
-          </div>
-        </div>
-      </a>
-      </article>
-    {% endfor %}
-  </div>
-{% else %}
-  <div class="rounded-2xl border border-dashed border-zinc-300 p-10 text-center bg-white">
-    <div class="text-2xl mb-2">🍽️</div>
-    <h2 class="text-lg font-semibold">Aucune recette trouvée</h2>
-    <p class="mt-1 text-sm text-zinc-600">Ajoutez-en une nouvelle pour commencer.</p>
-  </div>
-{% endif %}
 
+            {# Description with 3-line clamp (CSS fallback inline) #}
+            <p class="text-sm text-zinc-600 mt-2 line-clamp-3"
+               style="-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">
+              {{ recipe.description|default('No description yet') }}
+            </p>
+
+            <div class="mt-3 flex items-center justify-between text-xs text-zinc-500">
+              <div class="flex items-center gap-3">
+                {% if recipe.prepTime %}
+                  <span class="inline-flex items-center gap-1">⏱️ {{ recipe.prepTime }} min</span>
+                {% endif %}
+                {% if recipe.createdAt %}
+                  <span class="inline-flex items-center gap-1">📅 {{ recipe.createdAt|date('d/m/Y') }}</span>
+                {% endif %}
+              </div>
+
+              {% set d = recipe.difficulty ?? 0 %}
+              <div class="flex items-center">
+                {% for i in 1..5 %}
+                  {% if i <= d %}<span class="text-amber-500">★</span>{% else %}<span class="text-zinc-300">☆</span>{% endif %}
+                {% endfor %}
+              </div>
+            </div>
+
+            {# Actions pinned to bottom #}
+            {% if can_edit or can_delete %}
+              <div class="mt-auto pt-4 flex items-center justify-between">
+                {% if can_edit %}
+                  <a href="{{ path('app_recipe_edit', { id: recipe.id }) }}"
+                    class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34a1.25 1.25 0 0 0 0-1.77L19.43 2.6a1.25 1.25 0 0 0-1.77 0l-1.66 1.66 3.75 3.75 1.66-1.66z"/>
+                    </svg>
+                    Edit
+                  </a>
+                {% else %}
+                  <span></span> {# keeps spacing if only Delete shows #}
+                {% endif %}
+
+                {% if can_delete %}
+                  <form method="post"
+                        action="{{ path('app_recipe_delete', { id: recipe.id }) }}"
+                        onsubmit="return confirm('Permanently delete “{{ recipe.title }}”?')"
+                        class="inline-flex"
+                        data-turbo="false">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M6 7h12l-1 13H7L6 7zm3-3h6l1 2H8l1-2z"/>
+                      </svg>
+                      Delete
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="rounded-2xl border border-dashed border-zinc-300 p-10 text-center bg-white">
+      <div class="text-2xl mb-2">🍽️</div>
+      <h2 class="text-lg font-semibold">No recipes yet</h2>
+      <p class="mt-1 text-sm text-zinc-600">Create one to get started.</p>
+    </div>
+  {% endif %}
 </section>
 {% endblock %}

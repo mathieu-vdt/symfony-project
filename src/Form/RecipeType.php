@@ -13,6 +13,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Vich\UploaderBundle\Form\Type\VichImageType;
+use Symfony\Component\Validator\Constraints\Image as ImageConstraint;
 
 class RecipeType extends AbstractType
 {
@@ -20,8 +22,8 @@ class RecipeType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
-                'label' => 'Titre',
-                'attr' => ['placeholder' => 'Gâteau au chocolat'],
+                'label' => 'Title',
+                'attr' => ['placeholder' => 'Chocolate Cake'],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
@@ -33,34 +35,50 @@ class RecipeType extends AbstractType
                 'attr' => ['rows' => 6],
             ])
             ->add('prepTime', IntegerType::class, [
-                'label' => 'Temps (min)',
+                'label' => 'Preparation time (min)',
                 'required' => false,
             ])
             ->add('difficulty', ChoiceType::class, [
-                'label' => 'Difficulté',
+                'label' => 'Difficulty',
                 'required' => false,
                 'choices' => [
-                    '★☆☆☆☆ (1)' => 1,
-                    '★★☆☆☆ (2)' => 2,
-                    '★★★☆☆ (3)' => 3,
-                    '★★★★☆ (4)' => 4,
-                    '★★★★★ (5)' => 5,
+                    '1' => 1, '2' => 2, '3' => 3, '4' => 4, '5' => 5,
                 ],
-                'placeholder' => '— Sélectionner —',
+                'expanded' => true,   // radios
+                'multiple' => false,
+                'placeholder' => false,
             ])
             ->add('category', EntityType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
-                'label' => 'Catégorie',
-                'placeholder' => '— Sélectionner —',
+                'label' => 'Category',
+                'placeholder' => '— Select —',
             ])
             ->add('ingredients', EntityType::class, [
                 'class' => Ingredient::class,
                 'choice_label' => 'name',
-                'label' => 'Ingrédients',
+                'label' => 'Ingredients',
                 'multiple' => true,
-                'expanded' => false,
+                'expanded' => true,
                 'by_reference' => false,
+            ])
+            ->add('imageFile', VichImageType::class, [
+                'label' => 'Image',
+                'required' => false,
+                'allow_delete' => true,
+                'download_uri' => false,
+                'image_uri' => true,
+                'asset_helper' => true,
+                'attr' => [
+                    'accept' => 'image/*',
+                    'class'  => 'block w-full text-sm text-zinc-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100',
+                ],
+                'constraints' => [
+                    new ImageConstraint([
+                        'maxSize' => '5M',
+                        'mimeTypesMessage' => 'Please upload a valid image.',
+                    ]),
+                ],
             ]);
     }
 

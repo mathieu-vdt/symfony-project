@@ -1,3 +1,11 @@
 @import "tailwindcss";
 @source not "../../public";
 
+/* Rating CSS pur, compatible Tailwind */
+.rating { direction: rtl; } /* astuce pour que ~ cible "les étoiles à gauche" */
+.rating input { display: none; }
+.rating label { cursor: pointer; font-size: 0; } /* on ne montre pas le texte */
+.rating label svg { width: 28px; height: 28px; color: #d4d4d8; } /* gris */
+.rating input:checked ~ label svg { color: #f59e0b; }          /* amber-500 */
+.rating label:hover svg,
+.rating label:hover ~ label svg { color: #fbbf24; }            /* amber-400 hover */

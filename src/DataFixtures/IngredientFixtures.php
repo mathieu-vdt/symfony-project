@@ -20,12 +20,12 @@ class IngredientFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
-        $faker = Factory::create('fr_FR');
-        $units = ['g', 'ml', 'pièce', 'c.à.s', 'c.à.c'];
+        $faker = Factory::create('en_GB');
+        $units = ['g', 'ml', 'piece', 'tbsp', 'tsp'];
 
         for ($i = 0; $i < self::COUNT; $i++) {
             $ing = new Ingredient();
-            $ing->setName($faker->unique()->words(mt_rand(1, 2), true)); // ex: "farine", "sucre roux"
+            $ing->setName($faker->unique()->words(mt_rand(1, 2), true)); // e.g. "brown sugar"
             $ing->setUnit($faker->randomElement($units));
             $ing->setCreatedAt(new \DateTimeImmutable());
 
