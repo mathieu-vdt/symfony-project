@@ -1,0 +1,84 @@
+Query:
+    type: object
+    config:
+        description: "Root query type"
+        fields:
+            # Recipe queries
+            recipes:
+                type: "[Recipe!]!"
+                description: "Get all recipes"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').findAll()"
+            recipe:
+                type: "Recipe"
+                description: "Get a recipe by ID"
+                args:
+                    id:
+                        type: "Int!"
+                        description: "Recipe ID"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').findById(args['id'])"
+            recipesByCategory:
+                type: "[Recipe!]!"
+                description: "Get recipes by category"
+                args:
+                    categoryId:
+                        type: "Int!"
+                        description: "Category ID"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').findByCategory(args['categoryId'])"
+            recipesByDifficulty:
+                type: "[Recipe!]!"
+                description: "Get recipes by difficulty level"
+                args:
+                    difficulty:
+                        type: "Int!"
+                        description: "Difficulty level (1-5)"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').findByDifficulty(args['difficulty'])"
+            searchRecipes:
+                type: "[Recipe!]!"
+                description: "Search recipes by title"
+                args:
+                    query:
+                        type: "String!"
+                        description: "Search query"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').search(args['query'])"
+            
+            # User queries
+            users:
+                type: "[User!]!"
+                description: "Get all users"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\UserResolver').findAll()"
+            user:
+                type: "User"
+                description: "Get a user by ID"
+                args:
+                    id:
+                        type: "Int!"
+                        description: "User ID"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\UserResolver').findById(args['id'])"
+            
+            # Category queries
+            categories:
+                type: "[Category!]!"
+                description: "Get all categories"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\CategoryResolver').findAll()"
+            category:
+                type: "Category"
+                description: "Get a category by ID"
+                args:
+                    id:
+                        type: "Int!"
+                        description: "Category ID"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\CategoryResolver').findById(args['id'])"
+            
+            # Ingredient queries
+            ingredients:
+                type: "[Ingredient!]!"
+                description: "Get all ingredients"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\IngredientResolver').findAll()"
+            ingredient:
+                type: "Ingredient"
+                description: "Get an ingredient by ID"
+                args:
+                    id:
+                        type: "Int!"
+                        description: "Ingredient ID"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\IngredientResolver').findById(args['id'])"

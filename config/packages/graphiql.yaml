@@ -1,0 +1,2 @@
+overblog_graphiql:
+    template: 'graphiql/simple.html.twig'

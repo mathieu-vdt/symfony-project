@@ -1,0 +1,4 @@
+doctrine:
+    dbal:
+        # MySQL for testing - use same connection as main DB but different database name
+        url: 'mysql://symfony:symfony@127.0.0.1:3306/cookbook_campus_test?serverVersion=8.0&charset=utf8mb4'

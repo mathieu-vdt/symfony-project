@@ -1,0 +1,288 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content_title %}
+    <div class="d-flex align-items-center justify-content-between">
+        <h1 class="content-title">
+            <i class="fas fa-chart-line me-2"></i>
+            Dashboard Overview
+        </h1>
+        <small class="text-muted">
+            <i class="fas fa-clock me-1"></i>
+            Last updated: {{ "now"|date('F j, Y g:i A') }}
+        </small>
+    </div>
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+        <!-- KPI Cards -->
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h2 class="card-title h3 mb-1">{{ stats.totalRecipes }}</h2>
+                        <p class="card-text mb-0">Total Recipes</p>
+                        {% if stats.newRecipesThisWeek > 0 %}
+                            <small class="opacity-75">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                +{{ stats.newRecipesThisWeek }} this week
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-utensils fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h2 class="card-title h3 mb-1">{{ stats.totalUsers }}</h2>
+                        <p class="card-text mb-0">Registered Users</p>
+                        {% if stats.newUsersThisWeek > 0 %}
+                            <small class="opacity-75">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                +{{ stats.newUsersThisWeek }} this week
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h2 class="card-title h3 mb-1">{{ stats.totalCategories }}</h2>
+                        <p class="card-text mb-0">Categories</p>
+                        <small class="opacity-75">Recipe categories</small>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-white h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h2 class="card-title h3 mb-1">{{ stats.totalIngredients }}</h2>
+                        <p class="card-text mb-0">Ingredients</p>
+                        <small class="opacity-75">Unique ingredients</small>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-leaf fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Activity -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        Recent Recipes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recentRecipes is empty %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-utensils fa-3x mb-3 opacity-25"></i>
+                            <p>No recipes yet</p>
+                        </div>
+                    {% else %}
+                        <div class="list-group list-group-flush">
+                            {% for recipe in recentRecipes %}
+                                <div class="list-group-item border-0 px-0">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1">{{ recipe.title }}</h6>
+                                            <p class="mb-1 text-muted small">
+                                                by {{ recipe.author.username }}
+                                                {% if recipe.category %}
+                                                    <span class="badge bg-secondary ms-1">{{ recipe.category.name }}</span>
+                                                {% endif %}
+                                            </p>
+                                            <small class="text-muted">{{ recipe.createdAt|date('M j, Y') }}</small>
+                                        </div>
+                                        {% if recipe.difficulty %}
+                                            <div class="ms-2">
+                                                {% for i in 1..recipe.difficulty %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{{ ea_url().setController('App\\Controller\\Admin\\RecipeCrudController').setAction('index') }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-list me-1"></i>View All Recipes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Categories -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Popular Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if categoryStats is empty %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-tags fa-3x mb-3 opacity-25"></i>
+                            <p>No categories yet</p>
+                        </div>
+                    {% else %}
+                        {% for categoryStat in categoryStats %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-medium">{{ categoryStat.name }}</span>
+                                        <span class="text-muted">{{ categoryStat.recipeCount }}</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" 
+                                             style="width: {{ (categoryStat.recipeCount / stats.totalRecipes * 100)|round }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{{ ea_url().setController('App\\Controller\\Admin\\CategoryCrudController').setAction('index') }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-tags me-1"></i>Manage Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightning-bolt me-2"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\RecipeCrudController').setAction('new') }}" 
+                               class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-2"></i>Add Recipe
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\CategoryCrudController').setAction('new') }}" 
+                               class="btn btn-success w-100">
+                                <i class="fas fa-tag me-2"></i>Add Category
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\IngredientCrudController').setAction('new') }}" 
+                               class="btn btn-info w-100">
+                                <i class="fas fa-leaf me-2"></i>Add Ingredient
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ path('app_home') }}" 
+                               class="btn btn-outline-secondary w-100" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>View Site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom CSS for enhanced styling -->
+    <style>
+        .card {
+            border: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        }
+        
+        .bg-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+        
+        .bg-success {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+        
+        .bg-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        }
+        
+        .bg-warning {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-radius: 12px 12px 0 0 !important;
+        }
+        
+        .card-footer {
+            border-top: 1px solid rgba(0,0,0,0.05);
+            border-radius: 0 0 12px 12px !important;
+        }
+        
+        .progress {
+            border-radius: 10px;
+        }
+        
+        .progress-bar {
+            border-radius: 10px;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .list-group-item:last-child {
+            border-bottom: none !important;
+        }
+        
+        .content-title {
+            color: #2d3748;
+            font-weight: 600;
+        }
+    </style>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'form_div_layout.html.twig' %}
+
+{%- block form_widget_simple -%}
+    {%- set type = type|default('text') -%}
+    <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
+{%- endblock form_widget_simple -%}
+
+{%- block choice_widget_expanded -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' choice-widget-expanded')|trim}) -%}
+    <div {{ block('widget_container_attributes') }}>
+        {%- for child in form -%}
+            <div class="choice-item">
+                {{- form_widget(child) -}}
+                {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+            </div>
+        {%- endfor -%}
+    </div>
+{%- endblock choice_widget_expanded -%}
+
+{%- block radio_widget -%}
+    <input type="radio" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+{%- endblock radio_widget -%}
+
+{%- block checkbox_widget -%}
+    <input type="checkbox" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} />
+{%- endblock checkbox_widget -%}
+
+{# Custom dietary restrictions styling #}
+{% block _recipe_search_dietaryRestrictions_widget %}
+    <div class="grid grid-cols-2 gap-3">
+        {% for child in form %}
+            <label class="dietary-option flex items-center gap-2 p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 {{ child.vars.checked ? 'border-orange-500 bg-orange-50' : '' }}">
+                {{ form_widget(child, {'attr': {'class': 'sr-only dietary-checkbox'}}) }}
+                <span class="dietary-icon text-lg">
+                    {% if child.vars.value == 'vegetarian' %}🥬
+                    {% elseif child.vars.value == 'vegan' %}🌱
+                    {% elseif child.vars.value == 'gluten_free' %}🌾
+                    {% elseif child.vars.value == 'dairy_free' %}🥛
+                    {% elseif child.vars.value == 'low_carb' %}🥗
+                    {% endif %}
+                </span>
+                <span class="dietary-label text-sm font-medium text-gray-700">
+                    {{ child.vars.label|replace({'_': ' '})|title }}
+                </span>
+                <span class="dietary-checkmark ml-auto opacity-0 transition-opacity duration-200">
+                    <svg class="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                </span>
+            </label>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{# Custom difficulty filter styling #}
+{% block _recipe_search_difficulty_widget %}
+    <div class="difficulty-stars" data-field-name="{{ full_name }}">
+        <input type="hidden" name="{{ full_name }}" value="{{ value }}" class="difficulty-input">
+        <div class="flex items-center gap-1">
+            {% for i in 1..5 %}
+                <button type="button" 
+                        class="difficulty-star w-8 h-8 text-gray-300 hover:text-yellow-400 transition-colors duration-200 {{ value and i <= value ? 'text-yellow-400' : '' }}" 
+                        data-rating="{{ i }}"
+                        title="{{ i }} star{{ i != 1 ? 's' : '' }} - {% if i == 1 %}Very Easy{% elseif i == 2 %}Easy{% elseif i == 3 %}Medium{% elseif i == 4 %}Hard{% else %}Very Hard{% endif %}">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                </button>
+            {% endfor %}
+            <button type="button" 
+                    class="ml-2 text-xs text-gray-500 hover:text-gray-700 difficulty-clear {{ not value ? 'hidden' : '' }}" 
+                    title="Clear difficulty filter">
+                Clear
+            </button>
+        </div>
+        <div class="text-xs text-gray-500 mt-1 difficulty-label">
+            {% if value %}
+                {{ value }} star{{ value != 1 ? 's' : '' }} or higher
+            {% else %}
+                Any difficulty
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{# Custom rating filter styling #}
+{% block _recipe_search_minRating_widget %}
+    <div class="rating-stars" data-field-name="{{ full_name }}">
+        <input type="hidden" name="{{ full_name }}" value="{{ value }}" step="0.1" class="rating-input">
+        <div class="flex items-center gap-1">
+            {% for i in 1..5 %}
+                <button type="button" 
+                        class="rating-star w-8 h-8 text-gray-300 hover:text-yellow-400 transition-colors duration-200 {{ value and i <= value ? 'text-yellow-400' : '' }}" 
+                        data-rating="{{ i }}"
+                        title="{{ i }} star{{ i != 1 ? 's' : '' }} minimum">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                </button>
+            {% endfor %}
+            <button type="button" 
+                    class="ml-2 text-xs text-gray-500 hover:text-gray-700 rating-clear {{ not value ? 'hidden' : '' }}" 
+                    title="Clear rating filter">
+                Clear
+            </button>
+        </div>
+        <div class="text-xs text-gray-500 mt-1 rating-label">
+            {% if value %}
+                {{ value }}+ stars minimum
+            {% else %}
+                Any rating
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{# Custom prep time input styling #}
+{% block _recipe_search_maxPrepTime_widget %}
+    <div class="prep-time-input">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <input type="number" 
+                   name="{{ full_name }}" 
+                   value="{{ value }}" 
+                   placeholder="e.g. 30"
+                   min="1" 
+                   max="1000"
+                   class="w-full pl-10 pr-16 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-400 text-sm">min</span>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-2">
+            <button type="button" class="prep-time-preset text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors" data-time="15">15min</button>
+            <button type="button" class="prep-time-preset text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors" data-time="30">30min</button>
+            <button type="button" class="prep-time-preset text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors" data-time="60">1h</button>
+            <button type="button" class="prep-time-preset text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors" data-time="120">2h</button>
+        </div>
+    </div>
+{% endblock %}

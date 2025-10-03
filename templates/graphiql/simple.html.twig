@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html, body, #graphiql {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  </style>
+  <title>GraphiQL</title>
+  <link href="//unpkg.com/graphiql@1.4.7/graphiql.css" rel="stylesheet" />
+  <script src="//unpkg.com/react@16.14.0/umd/react.production.min.js"></script>
+  <script src="//unpkg.com/react-dom@16.14.0/umd/react-dom.production.min.js"></script>
+  <script src="//unpkg.com/graphiql@1.4.7/graphiql.min.js"></script>
+</head>
+<body>
+  <div id="graphiql">Loading...</div>
+  <script>
+    function graphQLFetcher(graphQLParams) {
+      return fetch('/graphql', {
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(graphQLParams),
+      }).then(function (response) {
+        return response.text();
+      }).then(function (responseBody) {
+        try {
+          return JSON.parse(responseBody);
+        } catch (error) {
+          return responseBody;
+        }
+      });
+    }
+
+    ReactDOM.render(
+      React.createElement(GraphiQL, { 
+        fetcher: graphQLFetcher,
+        defaultQuery: '# Welcome to GraphiQL\n# Type your query here and press Ctrl+Enter to execute\n\nquery {\n  __schema {\n    types {\n      name\n    }\n  }\n}'
+      }),
+      document.getElementById('graphiql')
+    );
+  </script>
+</body>
+</html>

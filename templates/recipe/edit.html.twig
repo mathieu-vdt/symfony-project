@@ -1,118 +1,124 @@
 {% extends 'base.html.twig' %}
+{% form_theme form 'recipe/_form_theme.html.twig' %}
+
 {% block title %}Edit: {{ recipe.title }}{% endblock %}
 
 {% block body %}
-{{ form_start(form, { attr: {
-  class: 'space-y-6',
-  'data-turbo': 'false' 
-} }) }}
-
 <section class="container mx-auto px-4 py-10">
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold tracking-tight">
+  <header class="mb-6 md:mb-8 text-center">
+    <h1 class="text-2xl md:text-4xl font-bold tracking-tight mb-2 md:mb-4">
       <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-        Edit Recipe
+        ✏️ Edit Recipe
       </span>
     </h1>
-    <p class="mt-2 text-sm text-zinc-600">Update the details and save your changes.</p>
+    <p class="text-base md:text-lg text-zinc-600">Update your recipe details and save your changes</p>
   </header>
 
-  <div class="rounded-2xl border border-zinc-200/60 bg-white/80 shadow-sm p-6 max-w-3xl">
+  <div class="max-w-4xl mx-auto">
+    {{ form_start(form, { 
+      attr: {
+        class: 'bg-white rounded-3xl shadow-xl border border-zinc-200/60 overflow-hidden backdrop-blur-sm',
+        'data-turbo': 'false',
+        novalidate: 'novalidate'
+      } 
+    }) }}
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div>
-        {{ form_label(form.title, 'Title', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
-        {{ form_widget(form.title, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
-        {{ form_errors(form.title) }}
-      </div>
-
-      <div>
-        {{ form_label(form.category, 'Category', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
-        {{ form_widget(form.category, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white' } }) }}
-        {{ form_errors(form.category) }}
-      </div>
-    </div>
-
-    <div>
-      {{ form_label(form.description, 'Description', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
-      {{ form_widget(form.description, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
-      {{ form_errors(form.description) }}
-    </div>
-
-    <div>
-      {{ form_label(form.instructions, 'Instructions', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
-      {{ form_widget(form.instructions, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
-      {{ form_errors(form.instructions) }}
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <div>
-        {{ form_label(form.prepTime, 'Preparation time (min)', { label_attr: { class: 'block text-sm font-medium mb-1' } }) }}
-        {{ form_widget(form.prepTime, { attr: { class: 'w-full rounded-xl border border-zinc-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500' } }) }}
-        {{ form_errors(form.prepTime) }}
-      </div>
-
-      <div>
-        {{ form_label(form.difficulty, 'Difficulty', { label_attr: { class: 'block text-sm font-medium mb-2' } }) }}
-        <div class="rating inline-flex gap-1">
-          {% for child in form.difficulty|reverse %}
-            <input
-              type="radio"
-              id="{{ child.vars.id }}"
-              name="{{ child.vars.full_name }}"
-              value="{{ child.vars.value }}"
-              {% if child.vars.checked %}checked{% endif %}
-            >
-            <label for="{{ child.vars.id }}" title="{{ child.vars.label }}">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="h-5 w-5">
-                <path d="M12 17.27l-5.18 3.04 1.4-5.99L3 9.24l6.09-.52L12 3l2.91 5.72 6.09.52-5.22 5.08 1.4 5.99z"/>
-              </svg>
-            </label>
-          {% endfor %}
+    <div class="p-8 space-y-10">
+      {# Basic Information Section #}
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold text-zinc-800 border-b-2 border-indigo-100 pb-4 flex items-center gap-2">
+          📝 Basic Information
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="lg:col-span-1">
+            {{ form_row(form.title, {
+              help: '🏷️ Give your recipe a descriptive and appetizing name'
+            }) }}
+          </div>
+          
+          <div class="lg:col-span-1">
+            {{ form_row(form.category) }}
+          </div>
         </div>
-        <p class="mt-1 text-xs text-zinc-500">Click a star to choose 1 to 5.</p>
-        {{ form_errors(form.difficulty) }}
+
+        <div>
+          {{ form_row(form.description, {
+            help: '💬 Briefly describe what makes this recipe special'
+          }) }}
+        </div>
+      </div>
+
+      {# Recipe Details Section #}
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold text-zinc-800 border-b-2 border-green-100 pb-4 flex items-center gap-2">
+          📋 Recipe Details
+        </h2>
+        
+        <div>
+          {{ form_row(form.instructions, {
+            help: '👨‍🍳 Provide step-by-step cooking instructions'
+          }) }}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            {{ form_row(form.prepTime, {
+              help: '⏱️ Time in minutes'
+            }) }}
+          </div>
+          
+          <div>
+            {{ form_row(form.difficulty) }}
+          </div>
+        </div>
+      </div>
+
+      {# Ingredients Section #}
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold text-zinc-800 border-b-2 border-orange-100 pb-4 flex items-center gap-2">
+          🥕 Ingredients
+        </h2>
+        
+        <div>
+          {{ form_row(form.ingredients, {
+            help: '🛒 Select all ingredients needed for this recipe'
+          }) }}
+        </div>
+      </div>
+
+      {# Image Section #}
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold text-zinc-800 border-b-2 border-purple-100 pb-4 flex items-center gap-2">
+          📸 Recipe Image
+        </h2>
+        
+        <div>
+          {% include 'recipe/_image_preview_field.html.twig' with { form: form, recipe: recipe } %}
+        </div>
       </div>
     </div>
 
-    <div>
-      {{ form_label(form.ingredients, 'Ingredients', { label_attr: { class: 'block text-sm font-medium mb-2' } }) }}
-      <div class="flex flex-wrap gap-2">
-        {% for child in form.ingredients %}
-          <span class="relative">
-            <input
-              type="checkbox"
-              id="{{ child.vars.id }}"
-              name="{{ child.vars.full_name }}"
-              value="{{ child.vars.value }}"
-              {% if child.vars.checked %}checked{% endif %}
-              class="sr-only peer"
-            >
-            <label for="{{ child.vars.id }}"
-                   class="inline-flex items-center select-none cursor-pointer rounded-full border px-3 py-1 text-sm transition
-                          border-zinc-300 text-zinc-700 bg-white hover:border-indigo-400
-                          peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600">
-              {{ child.vars.label }}
-            </label>
-          </span>
-        {% endfor %}
+    {# Form Actions - Mobile Optimized #}
+    <div class="bg-gradient-to-r from-zinc-50 to-zinc-100 px-4 md:px-8 py-4 md:py-6 border-t border-zinc-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 order-2 sm:order-1">
+        <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" 
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-zinc-700 font-medium rounded-xl border border-zinc-300 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-all duration-200 shadow-sm hover:shadow touch-target">
+          ← Cancel
+        </a>
+        
+        <a href="{{ path('app_home') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-4 py-3 sm:py-2 text-sm text-zinc-600 hover:text-zinc-800 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors touch-target">
+          🏠 <span>Back to recipes</span>
+        </a>
       </div>
-      {{ form_errors(form.ingredients) }}
-
-      {% include 'recipe/_image_preview_field.html.twig' with { form: form, recipe: recipe } %}
-    </div>
-
-    <div class="flex items-center gap-3 pt-2">
-      <button type="submit"
-              class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        Save
+      
+      <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium rounded-xl hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl touch-target order-1 sm:order-2">
+        💾 Save Changes
       </button>
-      <a href="{{ path('app_home') }}" class="text-sm text-zinc-600 hover:text-zinc-800">Cancel</a>
     </div>
 
     {{ form_row(form._token) }}
+    {{ form_end(form, { render_rest: false }) }}
   </div>
 </section>
-
-{{ form_end(form, { render_rest: false }) }}
 {% endblock %}

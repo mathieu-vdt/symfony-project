@@ -1,0 +1,166 @@
+{% form_theme form _self %}
+
+{# Custom form field wrapper #}
+{% block form_row %}
+    <div class="space-y-2">
+        {% if label is not same as(false) %}
+            {{ form_label(form) }}
+        {% endif %}
+        
+        <div class="form-field-input">
+            {{ form_widget(form) }}
+            {% if help is defined and help %}
+                <p class="text-xs text-zinc-500 mt-1">{{ help }}</p>
+            {% endif %}
+        </div>
+        
+        {{ form_errors(form) }}
+    </div>
+{% endblock form_row %}
+
+{# Custom label styling #}
+{% block form_label %}
+    {% if label is not same as(false) %}
+        <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %} class="block text-sm font-medium text-zinc-700">
+            {{ translation_domain is same as(false) ? label : label|trans({}, translation_domain) }}
+            {% if required %}
+                <span class="text-red-500 ml-1">*</span>
+            {% endif %}
+        </label>
+    {% endif %}
+{% endblock form_label %}
+
+{# Custom widget styling - Mobile Optimized #}
+{% block form_widget_simple %}
+    <input type="{{ type|default('text') }}"{{ block('widget_attributes') }}{% if value is not empty %} value="{{ value }}"{% endif %} 
+           class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-4 md:py-3 text-base md:text-sm text-zinc-900 placeholder-zinc-500 transition-colors duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed touch-target {{ errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : '' }}" />
+{% endblock form_widget_simple %}
+
+{# Textarea widget - Mobile Optimized #}
+{% block textarea_widget %}
+    <textarea {{ block('widget_attributes') }} 
+              class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-4 md:py-3 text-base md:text-sm text-zinc-900 placeholder-zinc-500 transition-colors duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed resize-y min-h-[150px] md:min-h-[120px] touch-target {{ errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : '' }}">{{ value }}</textarea>
+{% endblock textarea_widget %}
+
+{# Select widget - Mobile Optimized #}
+{% block choice_widget_collapsed %}
+    <select {{ block('widget_attributes') }}{% if multiple %} multiple="multiple"{% endif %} 
+            class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-4 md:py-3 text-base md:text-sm text-zinc-900 transition-colors duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed cursor-pointer touch-target {{ errors|length > 0 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : '' }}">
+        {% if placeholder is not empty %}
+            <option value=""{% if required and value is empty %} selected="selected"{% endif %}>{{ placeholder != '' ? (translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain)) }}</option>
+        {% endif %}
+        {% if preferred_choices|length > 0 %}
+            {% set options = preferred_choices %}
+            {% set render_preferred_choices = true %}
+            {{- block('choice_widget_options') -}}
+            {% if choices|length > 0 and separator is not none %}
+                <option disabled="disabled">{{ separator }}</option>
+            {% endif %}
+        {% endif %}
+        {% set options = choices %}
+        {{- block('choice_widget_options') -}}
+    </select>
+{% endblock choice_widget_collapsed %}
+
+{# Custom error styling #}
+{% block form_errors %}
+    {% if errors|length > 0 %}
+        <div class="space-y-1">
+            {% for error in errors %}
+                <p class="text-sm text-red-600 flex items-center gap-1">
+                    <span class="text-red-500">⚠️</span> {{ error.message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock form_errors %}
+
+{# Enhanced star rating widget #}
+{% block _recipe_difficulty_widget %}
+    <div class="star-rating-wrapper">
+        <div class="mb-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-amber-600 text-lg">⭐</span>
+                <h3 class="text-sm font-semibold text-amber-800">Recipe Difficulty</h3>
+                <span class="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded-full">
+                    <span id="difficulty-level">No rating</span>
+                </span>
+            </div>
+            <p class="text-xs text-amber-700">Click stars to rate difficulty (1 = Easy, 5 = Very Hard)</p>
+        </div>
+        
+        <fieldset class="rating inline-flex gap-1">
+            <legend class="sr-only">Recipe difficulty rating</legend>
+            {% for child in form|reverse %}
+                {{ form_widget(child, {
+                    attr: {
+                        class: 'sr-only star-rating-input',
+                        id: child.vars.id,
+                        'data-level': child.vars.value
+                    }
+                }) }}
+                <label for="{{ child.vars.id }}" 
+                       class="star-rating-label enhanced-star"
+                       title="{{ child.vars.label }} star{{ child.vars.value != 1 ? 's' : '' }}"
+                       data-level="{{ child.vars.value }}">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="star-icon enhanced-star-icon">
+                        <path d="M12 17.27l-5.18 3.04 1.4-5.99L3 9.24l6.09-.52L12 3l2.91 5.72 6.09.52-5.22 5.08 1.4 5.99z"/>
+                    </svg>
+                </label>
+            {% endfor %}
+        </fieldset>
+        <div class="mt-2 text-center">
+            <button type="button" 
+                    class="clear-rating-btn inline-flex items-center gap-1 px-3 py-1 text-xs text-zinc-600 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition-colors">
+                <span>🗑️</span> Clear Rating
+            </button>
+        </div>
+    </div>
+{% endblock %}
+
+{# Enhanced checkbox pills for ingredients #}
+{% block _recipe_ingredients_widget %}
+    <div class="checkbox-pills-wrapper">
+        <div class="mb-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-orange-600 text-lg">🛒</span>
+                <h3 class="text-sm font-semibold text-orange-800">Select Ingredients</h3>
+                <span class="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">
+                    <span id="selected-count">0</span> selected
+                </span>
+            </div>
+            <p class="text-xs text-orange-700">Click on ingredients to add or remove them from your recipe</p>
+        </div>
+        
+        <fieldset class="checkbox-pills enhanced-pills">
+            <legend class="sr-only">Select ingredients for your recipe</legend>
+            {% for child in form %}
+                <div class="checkbox-pill enhanced-pill">
+                    {{ form_widget(child, {
+                        attr: {
+                            class: 'checkbox-pill-input enhanced-pill-input',
+                            id: child.vars.id,
+                            'data-ingredient': child.vars.label
+                        }
+                    }) }}
+                    <label for="{{ child.vars.id }}" class="checkbox-pill-label enhanced-pill-label">
+                        <span class="pill-emoji">🥘</span>
+                        <span class="pill-text">{{ child.vars.label }}</span>
+                        <span class="pill-check">✓</span>
+                    </label>
+                </div>
+            {% endfor %}
+        </fieldset>
+        
+        <div class="mt-4 text-center">
+            <button type="button" 
+                    class="select-all-btn inline-flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors">
+                <span>📋</span> Select All
+            </button>
+            <button type="button" 
+                    class="clear-all-btn inline-flex items-center gap-2 px-4 py-2 text-sm text-zinc-600 hover:text-zinc-700 hover:bg-zinc-50 rounded-lg transition-colors ml-2">
+                <span>🗑️</span> Clear All
+            </button>
+        </div>
+    </div>
+{% endblock %}

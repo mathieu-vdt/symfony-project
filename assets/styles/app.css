@@ -1,11 +1,633 @@
 @import "tailwindcss";
 @source not "../../public";
 
-/* Rating CSS pur, compatible Tailwind */
-.rating { direction: rtl; } /* astuce pour que ~ cible "les étoiles à gauche" */
-.rating input { display: none; }
-.rating label { cursor: pointer; font-size: 0; } /* on ne montre pas le texte */
-.rating label svg { width: 28px; height: 28px; color: #d4d4d8; } /* gris */
-.rating input:checked ~ label svg { color: #f59e0b; }          /* amber-500 */
+/* ===== UTILITY CLASSES ===== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Line clamping utility */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom animations */
+@keyframes slide-in {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0;
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1;
+  }
+}
+
+.animate-slide-in { 
+  animation: slide-in 0.25s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ===== FORM STYLING ===== */
+
+/* Form field wrapper */
+.form-field-wrapper {
+  @apply space-y-2;
+}
+
+/* Form labels */
+.form-label {
+  @apply block text-sm font-medium text-zinc-700;
+}
+
+.form-required {
+  @apply text-red-500 ml-1;
+}
+
+/* Form inputs */
+.form-input {
+  @apply w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 transition-colors duration-200;
+  @apply focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20;
+  @apply disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed;
+}
+
+.form-input:invalid {
+  @apply border-red-300 focus:border-red-500 focus:ring-red-500/20;
+}
+
+/* Textareas */
+.form-textarea {
+  @apply w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 transition-colors duration-200;
+  @apply focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20;
+  @apply disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed;
+  @apply resize-y min-h-[120px];
+}
+
+/* Select dropdowns */
+.form-select {
+  @apply w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-500 transition-colors duration-200;
+  @apply focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20;
+  @apply disabled:bg-zinc-50 disabled:text-zinc-500 disabled:cursor-not-allowed;
+  @apply bg-white cursor-pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Form help text */
+.form-field-help {
+  @apply text-xs text-zinc-500 mt-1;
+}
+
+/* Form errors */
+.form-errors {
+  @apply space-y-1;
+}
+
+.form-error {
+  @apply text-sm text-red-600 flex items-center gap-1;
+}
+
+.form-error::before {
+  content: "⚠";
+  @apply text-red-500;
+}
+
+/* ===== STAR RATING ===== */
+
+.star-rating-wrapper {
+  @apply space-y-2;
+}
+
+.star-rating-wrapper fieldset {
+  @apply border-0 p-0 m-0;
+  direction: rtl; /* RTL trick for CSS-only star rating */
+}
+
+.star-rating-input {
+  @apply sr-only;
+}
+
+.star-rating-label {
+  @apply cursor-pointer transition-colors duration-200;
+}
+
+.star-icon {
+  @apply w-7 h-7 text-zinc-300 hover:text-amber-400 transition-colors;
+}
+
+.star-rating-input:checked ~ .star-rating-label .star-icon,
+.star-rating-label:hover .star-icon,
+.star-rating-label:hover ~ .star-rating-label .star-icon {
+  @apply text-amber-500;
+}
+
+.star-rating-input:focus + .star-rating-label .star-icon {
+  @apply ring-2 ring-indigo-500 ring-offset-2 rounded;
+}
+
+.star-rating-help {
+  @apply text-xs text-zinc-500;
+}
+
+/* Enhanced star rating */
+.enhanced-star {
+  @apply cursor-pointer transition-all duration-300 transform;
+}
+
+.enhanced-star-icon {
+  @apply w-8 h-8 text-zinc-300 transition-all duration-300;
+}
+
+.enhanced-star:hover {
+  @apply scale-110;
+}
+
+.enhanced-star:hover .enhanced-star-icon,
+.enhanced-star:hover ~ .enhanced-star .enhanced-star-icon {
+  @apply text-amber-400 drop-shadow-sm;
+}
+
+.star-rating-input:checked + .enhanced-star .enhanced-star-icon,
+.star-rating-input:checked ~ .enhanced-star .enhanced-star-icon {
+  @apply text-amber-500 drop-shadow-md;
+}
+
+.star-rating-input:focus + .enhanced-star .enhanced-star-icon {
+  @apply ring-2 ring-amber-300 ring-offset-2 rounded;
+}
+
+/* ===== CHECKBOX PILLS ===== */
+
+.checkbox-pills-wrapper {
+  @apply space-y-2;
+}
+
+.checkbox-pills {
+  @apply flex flex-wrap gap-2 border-0 p-0 m-0;
+}
+
+.checkbox-pill {
+  @apply relative;
+}
+
+.checkbox-pill-input {
+  @apply sr-only;
+}
+
+.checkbox-pill-label {
+  @apply inline-flex items-center select-none cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200;
+  @apply border-zinc-300 text-zinc-700 bg-white hover:border-indigo-400 hover:bg-indigo-50;
+}
+
+.checkbox-pill-input:checked + .checkbox-pill-label {
+  @apply bg-indigo-600 text-white border-indigo-600 shadow-sm;
+}
+
+.checkbox-pill-input:focus + .checkbox-pill-label {
+  @apply ring-2 ring-indigo-500 ring-offset-2;
+}
+
+.checkbox-pill-input:disabled + .checkbox-pill-label {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Enhanced ingredient pills */
+.enhanced-pills {
+  @apply flex flex-wrap gap-3 border-0 p-0 m-0;
+}
+
+.enhanced-pill {
+  @apply relative;
+}
+
+.enhanced-pill-input {
+  @apply sr-only;
+}
+
+.enhanced-pill-label {
+  @apply inline-flex items-center gap-2 select-none cursor-pointer rounded-2xl border-2 px-4 py-3 text-sm font-medium transition-all duration-300 transform;
+  @apply border-orange-200 text-orange-800 bg-gradient-to-r from-white to-orange-50 hover:border-orange-300 hover:from-orange-50 hover:to-orange-100 hover:scale-105 hover:shadow-md;
+}
+
+.enhanced-pill-input:checked + .enhanced-pill-label {
+  @apply border-green-400 text-green-800 from-green-50 to-green-100 scale-105 shadow-lg;
+}
+
+.enhanced-pill-input:focus + .enhanced-pill-label {
+  @apply ring-2 ring-orange-300 ring-offset-2;
+}
+
+.enhanced-pill-input:disabled + .enhanced-pill-label {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.enhanced-pill-label .pill-emoji {
+  @apply text-base transition-transform duration-300;
+}
+
+.enhanced-pill-label .pill-text {
+  @apply font-medium;
+}
+
+.enhanced-pill-label .pill-check {
+  @apply text-green-600 opacity-0 transition-all duration-300 transform scale-75;
+}
+
+.enhanced-pill-input:checked + .enhanced-pill-label .pill-check {
+  @apply opacity-100 scale-100;
+}
+
+.enhanced-pill-input:checked + .enhanced-pill-label .pill-emoji {
+  @apply transform rotate-12;
+}
+
+.enhanced-pill-label:hover .pill-emoji {
+  @apply transform rotate-6;
+}
+
+/* ===== FILE UPLOAD STYLING ===== */
+
+.form-file-input {
+  @apply block w-full text-sm text-zinc-700 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer cursor-pointer;
+}
+
+/* Image preview */
+.image-preview {
+  @apply h-20 w-20 rounded-xl object-cover ring-1 ring-zinc-200 shadow-sm transition-all duration-200;
+}
+
+.image-preview.hidden {
+  @apply hidden;
+}
+
+.image-preview:hover {
+  @apply ring-2 ring-indigo-300 shadow-md;
+}
+
+/* ===== CARD COMPONENTS ===== */
+
+.card {
+  @apply bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden;
+}
+
+.card-hover {
+  @apply bg-white rounded-2xl border border-zinc-200 shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-zinc-200 bg-zinc-50;
+}
+
+.card-body {
+  @apply px-6 py-4;
+}
+
+.card-footer {
+  @apply px-6 py-4 border-t border-zinc-200 bg-zinc-50;
+}
+
+/* ===== BUTTON IMPROVEMENTS ===== */
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm hover:shadow;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-50 focus:ring-indigo-500 shadow-sm hover:shadow;
+}
+
+.btn-danger {
+  @apply inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm hover:shadow;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 focus:ring-indigo-500;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.btn-md {
+  @apply px-4 py-2 text-sm;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-base;
+}
+
+/* Button with icon spacing */
+.btn .icon {
+  @apply w-4 h-4;
+}
+
+.btn .icon:first-child {
+  @apply mr-2;
+}
+
+.btn .icon:last-child {
+  @apply ml-2;
+}
+
+/* Ensure all buttons have pointer cursor */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-ghost,
+.btn-sm,
+.btn-md,
+.btn-lg {
+  cursor: pointer;
+}
+
+/* ===== BADGE COMPONENTS ===== */
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800;
+}
+
+.badge-secondary {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800;
+}
+
+.badge-success {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800;
+}
+
+.badge-warning {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800;
+}
+
+.badge-danger {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+}
+
+/* ===== RESPONSIVE IMPROVEMENTS ===== */
+
+@media (max-width: 640px) {
+  .form-input,
+  .form-textarea,
+  .form-select {
+    @apply text-base; /* Prevent zoom on iOS */
+  }
+  
+  .star-icon {
+    @apply w-6 h-6;
+  }
+  
+  .checkbox-pill-label {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-4 py-2 text-sm; /* Smaller on mobile */
+  }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* Focus indicators */
+*:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+/* Cursor pointer for all interactive elements */
+button,
+.btn,
+[type="button"],
+[type="submit"],
+[type="reset"],
+a[href],
+label[for],
+select,
+[role="button"],
+[tabindex="0"],
+.cursor-pointer,
+.checkbox-pill-label,
+.enhanced-pill-label,
+.star-rating-label,
+.enhanced-star,
+input[type="checkbox"] + label,
+input[type="radio"] + label,
+.form-file-input,
+.dropdown-toggle,
+.nav-link,
+.menu-link,
+.btn-group .btn,
+.pagination .page-link,
+.card-hover,
+summary,
+details > summary {
+  cursor: pointer !important;
+}
+
+/* Ensure disabled elements have not-allowed cursor */
+button:disabled,
+.btn:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled,
+[type="reset"]:disabled,
+.btn.disabled,
+.disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .form-input {
+    border-width: 2px;
+  }
+  
+  .btn {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+
+@media print {
+  .btn,
+  .form-input,
+  .nav,
+  .toast-container,
+  #toast-container {
+    display: none !important;
+  }
+  
+  body {
+    color: black !important;
+    background: white !important;
+  }
+  
+  .card {
+    border: 1px solid black !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ===== ENHANCED TOAST STYLES ===== */
+
+#toast-container {
+  pointer-events: none;
+}
+
+#toast-container .toast-item {
+  pointer-events: auto;
+}
+
+.toast-item {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* Toast accessibility */
+.toast-item:focus-within {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Toast sound effect (optional) */
+@keyframes toast-ping {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.toast-item.toast-sound {
+  animation: toast-ping 0.3s ease-out;
+}
+
+/* ===== ADDITIONAL CURSOR FIXES ===== */
+
+/* Ensure all interactive elements have proper cursors */
+[onclick],
+[data-toggle],
+[data-dismiss],
+.clickable,
+.interactive,
+.form-check-label,
+.form-switch .form-check-input,
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+input[type="file"],
+.nav-tabs .nav-link,
+.nav-pills .nav-link,
+.dropdown-item,
+.list-group-item-action,
+.close,
+.btn-close,
+[data-bs-toggle],
+[data-bs-dismiss] {
+  cursor: pointer !important;
+}
+
+/* Text inputs should have text cursor */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+input[type="number"],
+textarea,
+.form-control {
+  cursor: text !important;
+}
+
+/* Form labels should have pointer when they have 'for' attribute */
+label[for] {
+  cursor: pointer !important;
+}
+
+/* Custom button classes from templates */
+.clear-rating-btn,
+.select-all-btn,
+.clear-all-btn,
+.toggle-btn,
+.action-btn,
+.filter-btn {
+  cursor: pointer !important;
+}
+
+/* Legacy rating CSS (for backward compatibility) */
+.rating { 
+  direction: rtl; 
+}
+
+.rating input { 
+  display: none; 
+}
+
+.rating label { 
+  cursor: pointer; 
+  font-size: 0; 
+}
+
+.rating label svg { 
+  width: 28px; 
+  height: 28px; 
+  color: #d4d4d8; 
+}
+
+.rating input:checked ~ label svg { 
+  color: #f59e0b; 
+}
+
 .rating label:hover svg,
-.rating label:hover ~ label svg { color: #fbbf24; }            /* amber-400 hover */
+.rating label:hover ~ label svg { 
+  color: #fbbf24; 
+}

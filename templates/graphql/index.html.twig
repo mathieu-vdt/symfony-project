@@ -1,0 +1,173 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}GraphQL API{% endblock %}
+
+{% block body %}
+<section class="container mx-auto px-4 py-6 md:py-10">
+  <header class="mb-8 text-center">
+    <h1 class="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+      <span class="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+        🚀 GraphQL API
+      </span>
+    </h1>
+    <p class="text-lg md:text-xl text-zinc-600 max-w-2xl mx-auto">
+      Powerful and flexible GraphQL API for our Recipe Cookbook
+    </p>
+  </header>
+
+  <div class="max-w-6xl mx-auto">
+    {# API Overview Cards #}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      {# GraphiQL Explorer #}
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">🔍</span>
+          <h3 class="text-xl font-semibold text-purple-800">GraphiQL Explorer</h3>
+        </div>
+        <p class="text-purple-700 mb-4">Interactive GraphQL IDE for testing queries and mutations</p>
+        <a href="/graphiql" 
+           class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+          Open GraphiQL
+        </a>
+      </div>
+
+      {# API Endpoint #}
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">🔗</span>
+          <h3 class="text-xl font-semibold text-blue-800">API Endpoint</h3>
+        </div>
+        <p class="text-blue-700 mb-4">Main GraphQL endpoint for your applications</p>
+        <code class="block bg-blue-100 text-blue-800 px-3 py-2 rounded-lg text-sm font-mono">
+          POST {{ url('overblog_graphql_endpoint') }}
+        </code>
+      </div>
+
+      {# Documentation #}
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">📚</span>
+          <h3 class="text-xl font-semibold text-green-800">Schema</h3>
+        </div>
+        <p class="text-green-700 mb-4">Complete GraphQL schema with all available operations</p>
+        <a href="{{ path('overblog_graphql_endpoint') }}?query=query%20IntrospectionQuery%20%7B%0A%20%20__schema%20%7B%0A%20%20%20%20types%20%7B%0A%20%20%20%20%20%20name%0A%20%20%20%20%7D%0A%20%20%7D%0A%7D" 
+           class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+          View Schema
+        </a>
+      </div>
+    </div>
+
+    {# Quick Start Examples #}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+      {# Sample Queries #}
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-200">
+        <h3 class="text-2xl font-semibold text-zinc-800 mb-6 flex items-center gap-2">
+          <span>📥</span> Sample Queries
+        </h3>
+        
+        <div class="space-y-6">
+          <div>
+            <h4 class="font-medium text-zinc-700 mb-2">Get All Recipes</h4>
+            <pre class="bg-zinc-100 text-zinc-800 p-4 rounded-lg text-sm overflow-x-auto"><code>query {
+  recipes {
+    id
+    title
+    description
+    difficulty
+    prepTime
+    author {
+      username
+    }
+    category {
+      name
+    }
+  }
+}</code></pre>
+          </div>
+
+          <div>
+            <h4 class="font-medium text-zinc-700 mb-2">Search Recipes</h4>
+            <pre class="bg-zinc-100 text-zinc-800 p-4 rounded-lg text-sm overflow-x-auto"><code>query {
+  searchRecipes(query: "pasta") {
+    id
+    title
+    averageRating
+    reviewCount
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      {# Sample Mutations #}
+      <div class="bg-white rounded-2xl p-6 shadow-lg border border-zinc-200">
+        <h3 class="text-2xl font-semibold text-zinc-800 mb-6 flex items-center gap-2">
+          <span>📤</span> Sample Mutations
+        </h3>
+        
+        <div class="space-y-6">
+          <div>
+            <h4 class="font-medium text-zinc-700 mb-2">Create Recipe</h4>
+            <pre class="bg-zinc-100 text-zinc-800 p-4 rounded-lg text-sm overflow-x-auto"><code>mutation {
+  createRecipe(input: {
+    title: "Delicious Pasta"
+    description: "A simple pasta recipe"
+    instructions: "Boil water, cook pasta..."
+    prepTime: 30
+    difficulty: 3
+    categoryId: 1
+    ingredientIds: [1, 2, 3]
+  }) {
+    id
+    title
+    author {
+      username
+    }
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Features Overview #}
+    <div class="bg-gradient-to-r from-zinc-50 to-zinc-100 rounded-2xl p-8 border border-zinc-200">
+      <h3 class="text-2xl font-semibold text-zinc-800 mb-6 text-center">🎯 GraphQL Features</h3>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="text-center">
+          <span class="text-3xl mb-2 block">⚡</span>
+          <h4 class="font-semibold text-zinc-700 mb-1">Fast Queries</h4>
+          <p class="text-sm text-zinc-600">Request only the data you need</p>
+        </div>
+        
+        <div class="text-center">
+          <span class="text-3xl mb-2 block">🔍</span>
+          <h4 class="font-semibold text-zinc-700 mb-1">Powerful Search</h4>
+          <p class="text-sm text-zinc-600">Search recipes by multiple criteria</p>
+        </div>
+        
+        <div class="text-center">
+          <span class="text-3xl mb-2 block">📊</span>
+          <h4 class="font-semibold text-zinc-700 mb-1">Aggregations</h4>
+          <p class="text-sm text-zinc-600">Get counts, averages, and more</p>
+        </div>
+        
+        <div class="text-center">
+          <span class="text-3xl mb-2 block">🔗</span>
+          <h4 class="font-semibold text-zinc-700 mb-1">Relations</h4>
+          <p class="text-sm text-zinc-600">Fetch nested data in one request</p>
+        </div>
+      </div>
+    </div>
+
+    {# Navigation #}
+    <div class="mt-10 text-center">
+      <a href="{{ path('app_home') }}" 
+         class="inline-flex items-center gap-2 px-6 py-3 bg-zinc-600 text-white rounded-lg hover:bg-zinc-700 transition-colors">
+        ← Back to Home
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

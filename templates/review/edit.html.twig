@@ -1,0 +1,314 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme form 'form/review_form_theme.html.twig' %}
+
+{% block title %}Edit Review - {{ recipe.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+        }
+
+        .has-error .rating-star {
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+        }
+
+        .has-error textarea {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 1px #ef4444;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+                <i class="fas fa-edit text-blue-500"></i>
+                Edit Your Review
+            </h1>
+            <div class="flex items-center gap-4">
+                {% if recipe.imageName %}
+                    <img src="{{ vich_uploader_asset(recipe, 'imageFile') }}" 
+                         alt="{{ recipe.title }}" 
+                         class="w-16 h-16 rounded-lg object-cover shadow-md">
+                {% endif %}
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-800">{{ recipe.title }}</h2>
+                    <p class="text-gray-600">by {{ recipe.author.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Form -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+                
+                {{ form_row(form.rating) }}
+                {{ form_row(form.comment) }}
+
+                <!-- Actions - Mobile Optimized -->
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-4 border-t">
+                    {{ form_widget(form.submit, {'attr': {
+                        'class': 'w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-medium px-8 py-4 sm:py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 touch-target order-1 sm:order-1'
+                    }}) }}
+                    
+                    <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" 
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors px-4 py-3 sm:py-2 rounded-lg hover:bg-gray-50 touch-target order-2 sm:order-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Cancel</span>
+                    </a>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Original Review Info -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+            <p class="text-sm text-yellow-800 flex items-center gap-2">
+                <i class="fas fa-info-circle"></i>
+                <strong>Original review:</strong> Posted on {{ review.createdAt|date('M j, Y') }}
+                {% if review.updatedAt > review.createdAt %}
+                    • Last updated on {{ review.updatedAt|date('M j, Y') }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced star rating functionality
+    const starWidgets = document.querySelectorAll('.review-rating-widget');
+    
+    starWidgets.forEach(widget => {
+        const hiddenInput = widget.querySelector('.rating-input');
+        const stars = widget.querySelectorAll('.rating-star');
+        const ratingLabel = widget.querySelector('.rating-label');
+        const descriptionEl = widget.querySelector('.description-text');
+        const descriptionContainer = widget.querySelector('.rating-description');
+        
+        const ratingDescriptions = {
+            1: "This recipe didn't work well for me. Consider trying something else.",
+            2: "The recipe was okay but had some issues. Needs improvement.",
+            3: "A solid recipe that worked well with minor tweaks needed.",
+            4: "Great recipe! I enjoyed making and eating this.",
+            5: "Outstanding recipe! I highly recommend this to everyone."
+        };
+        
+        let currentRating = parseInt(hiddenInput.value) || 0;
+        
+        // Initialize display
+        updateStarsDisplay(currentRating);
+        if (currentRating > 0) {
+            showDescription(currentRating);
+        }
+        
+        stars.forEach((star, index) => {
+            const rating = index + 1;
+            
+            star.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentRating = rating;
+                hiddenInput.value = rating;
+                updateStarsDisplay(rating);
+                updateRatingLabel(rating);
+                showDescription(rating);
+                
+                // Remove any validation errors
+                const errorContainer = widget.closest('.form-group').querySelector('.mt-3');
+                if (errorContainer) {
+                    errorContainer.style.display = 'none';
+                }
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                updateStarsDisplay(rating);
+                showDescription(rating);
+            });
+            
+            star.addEventListener('mouseleave', function() {
+                updateStarsDisplay(currentRating);
+                if (currentRating > 0) {
+                    showDescription(currentRating);
+                } else {
+                    hideDescription();
+                }
+            });
+        });
+        
+        function updateStarsDisplay(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('text-gray-300');
+                    star.classList.add('text-yellow-400');
+                } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
+        
+        function updateRatingLabel(rating) {
+            const labels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+            const colors = ['', 'text-red-600', 'text-orange-600', 'text-yellow-600', 'text-blue-600', 'text-green-600'];
+            
+            ratingLabel.innerHTML = `
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    ${rating} star${rating !== 1 ? 's' : ''} - 
+                    <span class="${colors[rating]}">${labels[rating]}</span>
+                </span>
+            `;
+        }
+        
+        function showDescription(rating) {
+            if (descriptionEl && ratingDescriptions[rating]) {
+                descriptionEl.textContent = ratingDescriptions[rating];
+                descriptionContainer.classList.remove('opacity-0');
+                descriptionContainer.classList.add('opacity-100');
+            }
+        }
+        
+        function hideDescription() {
+            descriptionContainer.classList.add('opacity-0');
+            descriptionContainer.classList.remove('opacity-100');
+        }
+    });
+    
+    // Enhanced comment field functionality
+    const commentWidget = document.querySelector('.comment-widget');
+    if (commentWidget) {
+        const textarea = commentWidget.querySelector('textarea');
+        const counter = commentWidget.querySelector('#comment-count');
+        const tipEl = commentWidget.querySelector('.helpful-tip');
+        const hintEl = commentWidget.querySelector('#length-hint .hint-text');
+        const hintContainer = commentWidget.querySelector('#length-hint');
+        
+        function updateCharacterCount() {
+            const current = textarea.value.length;
+            const max = 1000;
+            
+            counter.textContent = current;
+            
+            // Update counter color
+            const counterContainer = counter.parentElement;
+            counterContainer.className = 'text-xs font-mono';
+            
+            if (current > max * 0.9) {
+                counterContainer.classList.add('text-red-600', 'font-semibold');
+            } else if (current > max * 0.7) {
+                counterContainer.classList.add('text-yellow-600', 'font-medium');
+            } else {
+                counterContainer.classList.add('text-gray-400');
+            }
+            
+            // Update helpful tips
+            if (current === 0) {
+                tipEl.textContent = "Share your cooking experience, tips, or modifications";
+                hideHint();
+            } else if (current < 20) {
+                tipEl.textContent = "Consider adding more detail about your experience";
+                showHint("Mention what you liked, any changes you made, or cooking tips");
+            } else if (current < 100) {
+                tipEl.textContent = "Good details! This helps other cooks";
+                showHint("Your feedback is valuable for other home cooks");
+            } else {
+                tipEl.textContent = "Excellent detail level - very helpful for others!";
+                hideHint();
+            }
+        }
+        
+        function showHint(text) {
+            hintEl.textContent = text;
+            hintContainer.classList.remove('opacity-0');
+            hintContainer.classList.add('opacity-100');
+        }
+        
+        function hideHint() {
+            hintContainer.classList.add('opacity-0');
+            hintContainer.classList.remove('opacity-100');
+        }
+        
+        textarea.addEventListener('input', updateCharacterCount);
+        textarea.addEventListener('focus', function() {
+            this.closest('.comment-widget').classList.add('ring-2', 'ring-orange-200');
+        });
+        
+        textarea.addEventListener('blur', function() {
+            this.closest('.comment-widget').classList.remove('ring-2', 'ring-orange-200');
+        });
+        
+        // Initial count
+        updateCharacterCount();
+    }
+    
+    // Enhanced form submission
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const buttonText = submitBtn.querySelector('.button-text span');
+            const icon = submitBtn.querySelector('.button-text i');
+            
+            // Validate rating
+            const ratingInput = form.querySelector('.rating-input');
+            if (!ratingInput.value) {
+                e.preventDefault();
+                
+                // Highlight rating field
+                const ratingWidget = ratingInput.closest('.review-rating-widget');
+                ratingWidget.classList.add('has-error');
+                
+                // Show error message
+                showFieldError(ratingWidget, 'Please select a rating before updating your review.');
+                
+                // Scroll to rating field
+                ratingWidget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            
+            if (submitBtn && buttonText && icon) {
+                submitBtn.disabled = true;
+                buttonText.textContent = 'Updating...';
+                icon.className = 'fas fa-spinner fa-spin';
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            }
+        });
+    }
+    
+    function showFieldError(field, message) {
+        // Remove existing error
+        const existingError = field.parentNode.querySelector('.field-error');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Create error element
+        const errorEl = document.createElement('div');
+        errorEl.className = 'field-error flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2 animate-fade-in';
+        errorEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i><span>${message}</span>`;
+        
+        field.parentNode.appendChild(errorEl);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (errorEl.parentNode) {
+                errorEl.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

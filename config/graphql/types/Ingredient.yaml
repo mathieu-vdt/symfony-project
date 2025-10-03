@@ -1,0 +1,14 @@
+Ingredient:
+    type: object
+    config:
+        description: "A recipe ingredient"
+        fields:
+            id:
+                type: "Int!"
+                description: "Ingredient ID"
+            name:
+                type: "String!"
+                description: "Ingredient name"
+            recipes:
+                type: "[Recipe!]!"
+                description: "Recipes using this ingredient"

@@ -22,5 +22,21 @@ services:
     App\Command\UserPromoteCommand:
         tags: ['console.command']
 
+    # GraphQL Resolvers - make them public for the GraphQL bundle
+    App\GraphQL\Resolver\RecipeResolver:
+        public: true
+        
+    App\GraphQL\Resolver\UserResolver:
+        public: true
+        
+    App\GraphQL\Resolver\CategoryResolver:
+        public: true
+        
+    App\GraphQL\Resolver\IngredientResolver:
+        public: true
+        
+    App\GraphQL\Resolver\RecipeMutationResolver:
+        public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

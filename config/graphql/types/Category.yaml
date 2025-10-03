@@ -1,0 +1,14 @@
+Category:
+    type: object
+    config:
+        description: "A recipe category"
+        fields:
+            id:
+                type: "Int!"
+                description: "Category ID"
+            name:
+                type: "String!"
+                description: "Category name"
+            recipes:
+                type: "[Recipe!]!"
+                description: "Recipes in this category"

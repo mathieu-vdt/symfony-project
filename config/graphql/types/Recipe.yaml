@@ -1,0 +1,49 @@
+Recipe:
+    type: object
+    config:
+        description: "A recipe in the cookbook"
+        fields:
+            id:
+                type: "Int!"
+                description: "Recipe ID"
+            title:
+                type: "String!"
+                description: "Recipe title"
+            description:
+                type: "String"
+                description: "Recipe description"
+            instructions:
+                type: "String!"
+                description: "Cooking instructions"
+            prepTime:
+                type: "Int"
+                description: "Preparation time in minutes"
+            difficulty:
+                type: "Int"
+                description: "Difficulty level (1-5)"
+            createdAt:
+                type: "String!"
+                description: "Creation date"
+            imageName:
+                type: "String"
+                description: "Recipe image filename"
+            category:
+                type: "Category!"
+                description: "Recipe category"
+            author:
+                type: "User!"
+                description: "Recipe author"
+            ingredients:
+                type: "[Ingredient!]!"
+                description: "List of ingredients"
+            reviews:
+                type: "[Review!]!"
+                description: "Recipe reviews"
+            averageRating:
+                type: "Float"
+                description: "Average rating from reviews"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').getAverageRating(value)"
+            reviewCount:
+                type: "Int!"
+                description: "Number of reviews"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeResolver').getReviewCount(value)"

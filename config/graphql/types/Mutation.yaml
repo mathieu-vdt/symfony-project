@@ -1,0 +1,13 @@
+Mutation:
+    type: object
+    config:
+        description: "Root mutation type"
+        fields:
+            createRecipe:
+                type: "Recipe"
+                description: "Create a new recipe"
+                args:
+                    input:
+                        type: "RecipeInput!"
+                        description: "Recipe input data"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\RecipeMutationResolver').createRecipe(args['input'])"

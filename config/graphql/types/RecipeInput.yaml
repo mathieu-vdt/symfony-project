@@ -1,0 +1,26 @@
+RecipeInput:
+    type: input-object
+    config:
+        description: "Input for creating/updating a recipe"
+        fields:
+            title:
+                type: "String!"
+                description: "Recipe title"
+            description:
+                type: "String"
+                description: "Recipe description"
+            instructions:
+                type: "String!"
+                description: "Cooking instructions"
+            prepTime:
+                type: "Int"
+                description: "Preparation time in minutes"
+            difficulty:
+                type: "Int"
+                description: "Difficulty level (1-5)"
+            categoryId:
+                type: "Int!"
+                description: "Category ID"
+            ingredientIds:
+                type: "[Int!]!"
+                description: "List of ingredient IDs"

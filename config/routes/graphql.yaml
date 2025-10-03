@@ -1,0 +1,14 @@
+# Custom GraphQL endpoints with proper paths
+overblog_graphql_endpoint:
+    path: /graphql
+    controller: Overblog\GraphQLBundle\Controller\GraphController::endpointAction
+    methods: [GET, POST]
+    defaults:
+        schemaName: default
+
+overblog_graphql_batch_endpoint:
+    path: /graphql/batch
+    controller: Overblog\GraphQLBundle\Controller\GraphController::batchEndpointAction
+    methods: [POST]
+    defaults:
+        schemaName: default

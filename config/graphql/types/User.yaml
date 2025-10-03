@@ -1,0 +1,39 @@
+User:
+    type: object
+    config:
+        description: "A user in the system"
+        fields:
+            id:
+                type: "Int!"
+                description: "User ID"
+            username:
+                type: "String!"
+                description: "Username"
+            email:
+                type: "String!"
+                description: "User email"
+            bio:
+                type: "String"
+                description: "User biography"
+            avatarName:
+                type: "String"
+                description: "Avatar filename"
+            location:
+                type: "String"
+                description: "User location"
+            website:
+                type: "String"
+                description: "User website"
+            joinedAt:
+                type: "String!"
+                description: "Join date"
+            recipes:
+                type: "[Recipe!]!"
+                description: "User's recipes"
+            reviews:
+                type: "[Review!]!"
+                description: "User's reviews"
+            recipeCount:
+                type: "Int!"
+                description: "Number of recipes created"
+                resolve: "@=service('App\\\\GraphQL\\\\Resolver\\\\UserResolver').getRecipeCount(value)"

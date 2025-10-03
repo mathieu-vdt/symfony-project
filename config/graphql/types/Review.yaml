@@ -1,0 +1,23 @@
+Review:
+    type: object
+    config:
+        description: "A recipe review"
+        fields:
+            id:
+                type: "Int!"
+                description: "Review ID"
+            rating:
+                type: "Int!"
+                description: "Rating (1-5)"
+            comment:
+                type: "String"
+                description: "Review comment"
+            createdAt:
+                type: "String!"
+                description: "Creation date"
+            author:
+                type: "User!"
+                description: "Review author"
+            recipe:
+                type: "Recipe!"
+                description: "Reviewed recipe"

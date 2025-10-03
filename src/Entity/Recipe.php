@@ -7,59 +7,79 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Symfony\Component\HttpFoundation\File\File;
 use App\Entity\User;
 
 #[ORM\Entity(repositoryClass: RecipeRepository::class)]
 #[Vich\Uploadable]
+#[OA\Schema(
+    description: 'Recipe entity',
+    type: 'object'
+)]
 class Recipe
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['recipe:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['recipe:details', 'recipe:write'])]
     private ?string $instructions = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     private ?int $prepTime = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     private ?int $difficulty = null;
 
     #[ORM\Column]
+    #[Groups(['recipe:read'])]
     private ?\DateTimeImmutable $createdAt = null;
-
 
     #[ORM\ManyToOne(inversedBy: 'recipes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['recipe:read', 'recipe:write'])]
     private ?Category $category = null;
-
 
     #[ORM\ManyToMany(targetEntity: Ingredient::class, inversedBy: 'recipes')]
     #[ORM\JoinTable(name: 'recipe_ingredient')]
+    #[Groups(['recipe:details', 'recipe:write'])]
     private Collection $ingredients;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['recipe:read'])]
     private ?string $imageName = null;
 
     #[Vich\UploadableField(mapping: 'recipe_image', fileNameProperty: 'imageName')]
     private ?File $imageFile = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups(['recipe:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'recipes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['recipe:read'])]
     private ?User $author = null;
+
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: Review::class, orphanRemoval: true)]
+    #[Groups(['recipe:details'])]
+    private Collection $reviews;
 
     public function getAuthor(): ?User { return $this->author; }
     public function setAuthor(?User $author): self { $this->author = $author; return $this; }
@@ -77,6 +97,7 @@ class Recipe
     public function __construct()
     {
         $this->ingredients = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -209,6 +230,42 @@ class Recipe
     public function removeIngredient(Ingredient $ingredient): static
     {
         $this->ingredients->removeElement($ingredient);
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->title ?? '';
+    }
+
+    // --- Reviews ---
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): static
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReview(Review $review): static
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getRecipe() === $this) {
+                $review->setRecipe(null);
+            }
+        }
+
         return $this;
     }
 }

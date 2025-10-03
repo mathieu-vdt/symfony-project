@@ -1,59 +1,155 @@
-{# Reusable for create/edit #}
+{# Enhanced image upload field with preview #}
 {% set inputId   = form.imageFile.file.vars.id %}
 {% set previewId = inputId ~ '_preview' %}
 
-<div class="space-y-2">
-  {{ form_label(form.imageFile.file, 'Image', { label_attr: { class: 'block text-sm font-medium' } }) }}
+<div class="space-y-4">
+  {{ form_label(form.imageFile.file, 'Recipe Image', { 
+    label_attr: { 
+      class: 'block text-sm font-medium text-zinc-700 mb-2' 
+    } 
+  }) }}
 
-  <div class="flex items-center gap-4">
-    {{ form_widget(form.imageFile.file, {
-      attr: {
-        id: inputId,
-        accept: 'image/*',
-        class: 'block w-full text-sm text-zinc-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100'
-      }
-    }) }}
-
-    <img id="{{ previewId }}"
-         src="{% if recipe is defined and recipe.imageName %}{{ vich_uploader_asset(recipe, 'imageFile') }}{% endif %}"
-         alt="Preview"
-         class="h-16 w-16 rounded-lg object-cover ring-1 ring-zinc-200 {% if not (recipe is defined and recipe.imageName) %}hidden{% endif %}">
-  </div>
-
-  {# Optional: "Delete image" checkbox if Vich renders it #}
-  {% if form.imageFile.delete is defined %}
-    <div class="flex items-center gap-2">
-      {{ form_widget(form.imageFile.delete) }}
-      {{ form_label(form.imageFile.delete, 'Delete image', { label_attr: { class: 'text-xs text-zinc-600' } }) }}
+  <div class="space-y-4">
+    {# File input with custom styling #}
+    <div class="relative">
+      {{ form_widget(form.imageFile.file, {
+        attr: {
+          id: inputId,
+          accept: 'image/*',
+          class: 'form-file-input'
+        }
+      }) }}
     </div>
-  {% endif %}
+
+    {# Image preview area #}
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0">
+        <img id="{{ previewId }}"
+             src="{% if recipe is defined and recipe.imageName %}{{ vich_uploader_asset(recipe, 'imageFile') }}{% endif %}"
+             alt="Recipe preview"
+             class="image-preview {% if not (recipe is defined and recipe.imageName) %}hidden{% endif %}">
+      </div>
+      
+      {# Image info and actions #}
+      <div class="flex-1 min-w-0">
+        {% if recipe is defined and recipe.imageName %}
+          <div class="text-sm text-zinc-600 mb-2">
+            <p class="font-medium">Current image: {{ recipe.imageName }}</p>
+            <p class="text-xs text-zinc-500">Choose a new file to replace it</p>
+          </div>
+        {% endif %}
+        
+        {# Delete image checkbox if available #}
+        {% if form.imageFile.delete is defined %}
+          <div class="flex items-center gap-2 mt-3">
+            {{ form_widget(form.imageFile.delete, {
+              attr: {
+                class: 'rounded border-zinc-300 text-red-600 focus:ring-red-500'
+              }
+            }) }}
+            {{ form_label(form.imageFile.delete, 'Remove current image', { 
+              label_attr: { 
+                class: 'text-sm text-zinc-600 cursor-pointer' 
+              } 
+            }) }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Upload guidelines #}
+    <div class="text-xs text-zinc-500 bg-zinc-50 rounded-lg p-3">
+      <p class="font-medium mb-1">Image Guidelines:</p>
+      <ul class="space-y-0.5">
+        <li>• Recommended size: 800x600 pixels or larger</li>
+        <li>• Accepted formats: JPG, PNG, WebP</li>
+        <li>• Maximum file size: 5MB</li>
+      </ul>
+    </div>
+  </div>
 
   {{ form_errors(form.imageFile.file) }}
 </div>
 
-{# Local script attached to this field #}
+{# Enhanced JavaScript for image preview #}
 <script>
 (function() {
-  const input   = document.getElementById('{{ inputId }}');
+  const input = document.getElementById('{{ inputId }}');
   const preview = document.getElementById('{{ previewId }}');
   if (!input || !preview) return;
 
-  input.addEventListener('change', function () {
+  function showImagePreview(file) {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file.');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert('Image file is too large. Please choose a file smaller than 5MB.');
+      input.value = '';
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    preview.src = url;
+    preview.classList.remove('hidden');
+    
+    // Clean up object URL when image loads
+    preview.onload = function() {
+      URL.revokeObjectURL(url);
+    };
+
+    // If there's a delete checkbox, uncheck it when new file is selected
+    const deleteName = input.name.replace('[file]', '[delete]');
+    const deleteCheckbox = document.querySelector(`[name="${CSS.escape(deleteName)}"]`);
+    if (deleteCheckbox) {
+      deleteCheckbox.checked = false;
+    }
+  }
+
+  input.addEventListener('change', function() {
     const file = this.files && this.files[0];
     if (!file) {
       preview.src = '';
       preview.classList.add('hidden');
       return;
     }
-    const url = URL.createObjectURL(file);
-    preview.src = url;
-    preview.classList.remove('hidden');
-    preview.onload = () => URL.revokeObjectURL(url);
-
-    // If Vich renders the delete checkbox, uncheck it when a new file is chosen
-    const deleteName = this.name.replace('[file]', '[delete]');
-    const del = document.querySelector(`[name="${CSS.escape(deleteName)}"]`);
-    if (del) del.checked = false;
+    
+    showImagePreview(file);
   });
+
+  // Handle drag and drop
+  const fileInputWrapper = input.closest('.relative');
+  if (fileInputWrapper) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      fileInputWrapper.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      fileInputWrapper.addEventListener(eventName, () => {
+        fileInputWrapper.classList.add('border-indigo-500', 'bg-indigo-50');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      fileInputWrapper.addEventListener(eventName, () => {
+        fileInputWrapper.classList.remove('border-indigo-500', 'bg-indigo-50');
+      });
+    });
+
+    fileInputWrapper.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        input.files = files;
+        showImagePreview(files[0]);
+      }
+    });
+  }
 })();
 </script>

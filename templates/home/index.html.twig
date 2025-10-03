@@ -1,128 +1,346 @@
 {% extends 'base.html.twig' %}
 
+
 {% block title %}Home{% endblock %}
 
 {% block body %}
-<section class="container mx-auto px-4 py-10">
-  <header class="mb-8">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">
-          <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-            All Recipes
-          </span>
-        </h1>
-        <p class="mt-2 text-sm text-zinc-600">Discover fresh ideas to cook today.</p>
-      </div>
+{# Hero Section #}
+<section class="bg-gradient-to-br from-indigo-50 via-white to-violet-50 border-b border-zinc-200">
+  <div class="container mx-auto px-4 py-8 md:py-12">
+    <header class="text-center max-w-3xl mx-auto mb-8 md:mb-10">
+      <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+        <span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+          Discover Amazing Recipes
+        </span>
+      </h1>
+      <p class="text-base md:text-lg text-zinc-600 leading-relaxed px-4">
+        Explore a world of culinary delights. Find, share, and create recipes that inspire your cooking journey.
+      </p>
+    </header>
 
-      <div class="flex items-center gap-3">
-        {# --- Search bar (GET) --- #}
-        <form method="get" action="{{ path('app_home') }}" class="flex items-center gap-2">
-          <label for="q" class="sr-only">Search</label>
-          <input
-            type="search"
-            id="q"
-            name="q"
-            value="{{ app.request.get('q') }}"
-            placeholder="Search recipes..."
-            class="w-56 md:w-72 rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          >
-          <button class="rounded-xl border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50">
-            Search
+    {# Advanced Search Section #}
+    <div class="max-w-4xl mx-auto">
+      {% if searchForm is defined %}
+        {% form_theme searchForm 'form/search_form_theme.html.twig' %}
+        {{ form_start(searchForm, {'attr': {'class': 'bg-white/95 backdrop-blur-sm rounded-2xl border-2 border-zinc-200 shadow-xl p-4 md:p-8 space-y-6 md:space-y-8'}}) }}
+        
+        {# Main search bar #}
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          {{ form_widget(searchForm.query, {'attr': {
+            'class': 'w-full pl-12 pr-4 py-3 md:py-4 text-base md:text-lg rounded-xl border-zinc-300 focus:border-orange-500 focus:ring-orange-500 transition-all',
+            'placeholder': 'Search for recipes, ingredients, or cuisine...'
+          }}) }}
+        </div>
+
+        {# Advanced Filters Toggle - Mobile Optimized #}
+        <div class="border-t border-zinc-200 pt-4 md:pt-6">
+          <button type="button" 
+                  onclick="toggleAdvancedFilters()" 
+                  class="flex items-center justify-between w-full md:w-auto text-sm md:text-base font-medium text-zinc-700 hover:text-zinc-900 transition-colors mb-4 md:mb-6 bg-zinc-50 md:bg-transparent rounded-lg p-3 md:p-0">
+            <span class="flex items-center gap-2">
+              <span class="text-lg md:text-base">🔧</span>
+              <span>Advanced Filters</span>
+            </span>
+            <svg id="filter-chevron" class="w-5 h-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
-        </form>
-      </div>
-    </div>
-  </header>
 
-  {% if recipes is not empty %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for recipe in recipes %}
-        {# Actions pinned to bottom (respect voter permissions) #}
-        {% set can_edit = is_granted('RECIPE_EDIT', recipe) %}
-        {% set can_delete = is_granted('RECIPE_DELETE', recipe) %}
-        {# Uniform card: same structure/height #}
-        <article class="group h-full flex flex-col rounded-2xl border border-zinc-200 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition overflow-hidden">
+          <div id="advanced-filters" class="hidden space-y-4 md:space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {# Left Column #}
+              <div class="space-y-4 md:space-y-6">
+                {# Category Filter #}
+                <div class="filter-group">
+                  {{ form_label(searchForm.category, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2'}}) }}
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    {{ form_widget(searchForm.category, {'attr': {'class': 'w-full pl-10 pr-4 py-3 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-base'}}) }}
+                  </div>
+                </div>
 
-          {# Fixed-height image area #}
-          <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" aria-label="View recipe {{ recipe.title }}">
-            <div class="h-40 w-full bg-zinc-50 flex items-center justify-center">
-              {% if recipe.imageName %}
-                <img src="{{ vich_uploader_asset(recipe, 'imageFile') }}"
-                     alt="{{ recipe.title }}"
-                     class="h-40 w-full object-cover">
-              {% else %}
-                <div class="text-zinc-400 text-sm">Image</div>
-              {% endif %}
+                {# Difficulty Filter #}
+                <div class="filter-group">
+                  {{ form_label(searchForm.difficulty, '🌟 Difficulty Level', {'label_attr': {'class': 'block text-sm font-semibold text-gray-800 mb-3'}}) }}
+                  {{ form_widget(searchForm.difficulty) }}
+                </div>
+
+                {# Max Prep Time #}
+                <div class="filter-group">
+                  {{ form_label(searchForm.maxPrepTime, '⏱️ Max Preparation Time', {'label_attr': {'class': 'block text-sm font-semibold text-gray-800 mb-3'}}) }}
+                  {{ form_widget(searchForm.maxPrepTime) }}
+                </div>
+              </div>
+
+              {# Right Column #}
+              <div class="space-y-4 md:space-y-6">
+                {# Min Rating #}
+                <div class="filter-group">
+                  {{ form_label(searchForm.minRating, '⭐ Minimum Rating', {'label_attr': {'class': 'block text-sm font-semibold text-gray-800 mb-3'}}) }}
+                  {{ form_widget(searchForm.minRating) }}
+                </div>
+
+                {# Dietary Restrictions #}
+                <div class="filter-group">
+                  {{ form_label(searchForm.dietaryRestrictions, '🥗 Dietary Preferences', {'label_attr': {'class': 'block text-sm font-semibold text-gray-800 mb-3'}}) }}
+                  {{ form_widget(searchForm.dietaryRestrictions) }}
+                </div>
+              </div>
             </div>
-          </a>
+          </div>
+        </div>
 
-          {# Flexible content takes remaining space #}
-          <div class="p-5 flex flex-col flex-1">
-            {% if recipe.category %}
-              <span class="inline-flex w-fit self-start items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
-                {{ recipe.category.name }}
+        {# Search Button - Mobile Optimized #}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between pt-4 md:pt-6 border-t border-zinc-200 gap-4">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <button type="submit" 
+                    class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold px-6 md:px-8 py-3 md:py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base touch-target">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {{ searchForm.submit.vars.label }}
+            </button>
+            
+            <a href="{{ path('app_home') }}" 
+               class="inline-flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors bg-gray-100 hover:bg-gray-200 px-4 py-3 rounded-xl touch-target">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Clear all filters
+            </a>
+          </div>
+          
+          <div class="text-xs md:text-sm text-gray-500 text-center md:text-right">
+            💡 Use advanced filters to find exactly what you're looking for
+          </div>
+        </div>
+
+      {{ form_end(searchForm, {'render_rest': false}) }}
+      {% endif %}
+    </div>
+
+    {# Search Results Summary - Mobile Optimized #}
+    {% if searchCriteria is defined and searchCriteria is not empty %}
+      <div class="max-w-4xl mx-auto mt-4 md:mt-6">
+        <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 md:p-4">
+          <h3 class="text-sm font-medium text-orange-800 mb-2">Active Filters:</h3>
+          <div class="flex flex-wrap gap-1 md:gap-2">
+            {% if searchCriteria.query is defined and searchCriteria.query %}
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                Search: "{{ searchCriteria.query }}"
               </span>
             {% endif %}
+            {% if searchCriteria.category is defined and searchCriteria.category %}
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                Category: {{ searchCriteria.category.name }}
+              </span>
+            {% endif %}
+            {% if searchCriteria.difficulty is defined and searchCriteria.difficulty %}
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                Difficulty: {{ searchCriteria.difficulty }} star{{ searchCriteria.difficulty != 1 ? 's' : '' }}
+              </span>
+            {% endif %}
+            {% if searchCriteria.maxPrepTime is defined and searchCriteria.maxPrepTime %}
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                Max time: {{ searchCriteria.maxPrepTime }}min
+              </span>
+            {% endif %}
+            {% if searchCriteria.minRating is defined and searchCriteria.minRating %}
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                Min rating: {{ searchCriteria.minRating }}★
+              </span>
+            {% endif %}
+            {% if searchCriteria.dietaryRestrictions is defined and searchCriteria.dietaryRestrictions %}
+              {% for restriction in searchCriteria.dietaryRestrictions %}
+                <span class="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                  {{ restriction|replace({'_': ' '})|title }}
+                </span>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
 
-            <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" class="block mt-2">
-              <h3 class="text-xl font-semibold leading-tight group-hover:text-indigo-700 transition">
+{# Main Content - Mobile Optimized #}
+<section class="container mx-auto px-4 py-8 md:py-12">
+  {% if recipes is not empty %}
+    {# Recipe Stats - Mobile Optimized #}
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 md:mb-8 gap-3 md:gap-4">
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-600">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H3m16 14H5" />
+        </svg>
+        <span>{{ recipes|length }} recipe{{ recipes|length != 1 ? 's' : '' }} found</span>
+        {% if app.request.get('category') %}
+          <span class="text-zinc-400 hidden sm:inline">•</span>
+          <span class="text-indigo-600 font-medium">
+            {% if app.request.get('category') == 'quick' %}⚡ Quick & Easy{% endif %}
+            {% if app.request.get('category') == 'vegetarian' %}🥬 Vegetarian{% endif %}
+            {% if app.request.get('category') == 'desserts' %}🍰 Desserts{% endif %}
+          </span>
+        {% endif %}
+        {% if app.request.get('q') %}
+          <span class="text-zinc-400 hidden sm:inline">•</span>
+          <span class="text-zinc-500">for "{{ app.request.get('q') }}"</span>
+        {% endif %}
+      </div>
+      
+      {# Quick Filters - Mobile Optimized #}
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-sm">
+        <span class="text-zinc-500 flex-shrink-0">🔍 Quick filters:</span>
+        <div class="flex flex-wrap gap-1 sm:gap-2">
+          <a href="{{ path('app_home', {category: 'quick', q: app.request.get('q')}) }}" 
+             class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full {{ app.request.get('category') == 'quick' ? 'bg-indigo-100 text-indigo-700' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200' }} transition-colors text-xs sm:text-sm">
+            ⚡ Quick & Easy
+          </a>
+          <a href="{{ path('app_home', {category: 'vegetarian', q: app.request.get('q')}) }}" 
+             class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full {{ app.request.get('category') == 'vegetarian' ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200' }} transition-colors text-xs sm:text-sm">
+            🥬 Vegetarian
+          </a>
+          <a href="{{ path('app_home', {category: 'desserts', q: app.request.get('q')}) }}" 
+             class="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full {{ app.request.get('category') == 'desserts' ? 'bg-pink-100 text-pink-700' : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200' }} transition-colors text-xs sm:text-sm">
+            🍰 Desserts
+          </a>
+          {% if app.request.get('category') %}
+            <a href="{{ path('app_home', {q: app.request.get('q')}) }}" 
+               class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs text-zinc-500 hover:text-zinc-700 transition-colors">
+              ✕ Clear
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Recipe Grid - Mobile Optimized #}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      {% for recipe in recipes %}
+        {% set can_edit = is_granted('RECIPE_EDIT', recipe) %}
+        {% set can_delete = is_granted('RECIPE_DELETE', recipe) %}
+        
+        <article class="group relative bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 touch-action-manipulation">
+          {# Recipe Image - Mobile Optimized #}
+          <div class="relative h-40 md:h-48 overflow-hidden">
+            <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" 
+               aria-label="View recipe {{ recipe.title }}"
+               class="block w-full h-full touch-target">
+              {% if recipe.imageName %}
+                <img 
+                  src="{{ vich_uploader_asset(recipe, 'imageFile') }}"
+                  alt="{{ recipe.title }}"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                >
+              {% else %}
+                <div class="w-full h-full bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center">
+                  <svg class="w-10 md:w-12 h-10 md:h-12 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              {% endif %}
+            </a>
+            
+            {# Category Badge - Mobile Optimized #}
+            {% if recipe.category %}
+              <div class="absolute top-2 md:top-3 left-2 md:left-3">
+                <span class="inline-flex items-center px-2 md:px-2.5 py-1 rounded-full text-xs font-medium bg-white/95 backdrop-blur-sm text-zinc-800 shadow-sm">
+                  {{ recipe.category.name }}
+                </span>
+              </div>
+            {% endif %}
+
+            {# Difficulty Stars - Mobile Optimized #}
+            {% set d = recipe.difficulty ?? 0 %}
+            {% if d > 0 %}
+              <div class="absolute top-2 md:top-3 right-2 md:right-3">
+                <div class="flex items-center gap-0.5 px-1.5 md:px-2 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm">
+                  {% for i in 1..d %}
+                    <svg class="w-2.5 md:w-3 h-2.5 md:h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          {# Recipe Content - Mobile Optimized #}
+          <div class="p-4 md:p-6">
+            <a href="{{ path('app_recipe_show', { id: recipe.id }) }}" 
+               class="block group-hover:text-indigo-600 transition-colors touch-target">
+              <h3 class="text-base md:text-lg font-semibold text-zinc-900 leading-tight mb-2 line-clamp-2">
                 {{ recipe.title }}
               </h3>
             </a>
 
-            {# Description with 3-line clamp (CSS fallback inline) #}
-            <p class="text-sm text-zinc-600 mt-2 line-clamp-3"
-               style="-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;">
-              {{ recipe.description|default('No description yet') }}
+            <p class="text-sm text-zinc-600 leading-relaxed mb-3 md:mb-4 line-clamp-2">
+              {{ recipe.description|default('A delicious recipe waiting to be discovered.') }}
             </p>
 
-            <div class="mt-3 flex items-center justify-between text-xs text-zinc-500">
-              <div class="flex items-center gap-3">
+            {# Recipe Meta - Mobile Optimized #}
+            <div class="flex items-center justify-between text-xs text-zinc-500 mb-3 md:mb-4">
+              <div class="flex items-center gap-2 md:gap-3">
                 {% if recipe.prepTime %}
-                  <span class="inline-flex items-center gap-1">⏱️ {{ recipe.prepTime }} min</span>
+                  <span class="flex items-center gap-1">
+                    <span class="text-sm">⏱️</span>
+                    <span>{{ recipe.prepTime }}min</span>
+                  </span>
                 {% endif %}
                 {% if recipe.createdAt %}
-                  <span class="inline-flex items-center gap-1">📅 {{ recipe.createdAt|date('d/m/Y') }}</span>
+                  <span class="flex items-center gap-1">
+                    <span class="text-sm">📅</span>
+                    <span>{{ recipe.createdAt|date('M j') }}</span>
+                  </span>
                 {% endif %}
               </div>
-
-              {% set d = recipe.difficulty ?? 0 %}
-              <div class="flex items-center">
-                {% for i in 1..5 %}
-                  {% if i <= d %}<span class="text-amber-500">★</span>{% else %}<span class="text-zinc-300">☆</span>{% endif %}
-                {% endfor %}
-              </div>
+              
+              {% if recipe.author %}
+                <span class="flex items-center gap-1 truncate max-w-20 md:max-w-none">
+                  <span class="text-sm">👨‍🍳</span>
+                  <span class="truncate">{{ recipe.author.username }}</span>
+                </span>
+              {% endif %}
             </div>
 
-            {# Actions pinned to bottom #}
+            {# Action Buttons - Mobile Optimized #}
             {% if can_edit or can_delete %}
-              <div class="mt-auto pt-4 flex items-center justify-between">
+              <div class="flex items-center justify-between pt-3 md:pt-4 border-t border-zinc-100 gap-2">
                 {% if can_edit %}
                   <a href="{{ path('app_recipe_edit', { id: recipe.id }) }}"
-                    class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors touch-target flex-1 max-w-20">
+                    <svg class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM21.41 6.34a1.25 1.25 0 0 0 0-1.77L19.43 2.6a1.25 1.25 0 0 0-1.77 0l-1.66 1.66 3.75 3.75 1.66-1.66z"/>
                     </svg>
-                    Edit
+                    <span class="hidden sm:inline">Edit</span>
                   </a>
                 {% else %}
-                  <span></span> {# keeps spacing if only Delete shows #}
+                  <div class="flex-1"></div>
                 {% endif %}
 
                 {% if can_delete %}
                   <form method="post"
                         action="{{ path('app_recipe_delete', { id: recipe.id }) }}"
-                        onsubmit="return confirm('Permanently delete “{{ recipe.title }}”?')"
-                        class="inline-flex"
+                        class="inline-flex delete-form"
+                        data-recipe-name="{{ recipe.title }}"
                         data-turbo="false">
                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
-                    <button type="submit"
-                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <button type="button"
+                            class="delete-btn inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors touch-target">
+                      <svg class="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M6 7h12l-1 13H7L6 7zm3-3h6l1 2H8l1-2z"/>
                       </svg>
-                      Delete
+                      <span class="hidden sm:inline">Delete</span>
                     </button>
                   </form>
                 {% endif %}
@@ -133,11 +351,313 @@
       {% endfor %}
     </div>
   {% else %}
-    <div class="rounded-2xl border border-dashed border-zinc-300 p-10 text-center bg-white">
-      <div class="text-2xl mb-2">🍽️</div>
-      <h2 class="text-lg font-semibold">No recipes yet</h2>
-      <p class="mt-1 text-sm text-zinc-600">Create one to get started.</p>
+    {# Empty State - Mobile Optimized #}
+    <div class="text-center py-12 md:py-16 px-4">
+      <div class="max-w-md mx-auto">
+        <div class="w-20 md:w-24 h-20 md:h-24 mx-auto mb-4 md:mb-6 bg-gradient-to-br from-indigo-100 to-violet-100 rounded-full flex items-center justify-center text-3xl md:text-4xl">
+          {% if app.request.get('category') %}
+            {% if app.request.get('category') == 'quick' %}⚡{% endif %}
+            {% if app.request.get('category') == 'vegetarian' %}🥬{% endif %}
+            {% if app.request.get('category') == 'desserts' %}🍰{% endif %}
+          {% else %}
+            🍽️
+          {% endif %}
+        </div>
+        <h2 class="text-xl md:text-2xl font-bold text-zinc-900 mb-2">No recipes found</h2>
+        <p class="text-sm md:text-base text-zinc-600 mb-4 md:mb-6 leading-relaxed">
+          {% if app.request.get('category') and app.request.get('q') %}
+            No recipes match your search "{{ app.request.get('q') }}" in the 
+            {% if app.request.get('category') == 'quick' %}Quick & Easy{% endif %}
+            {% if app.request.get('category') == 'vegetarian' %}Vegetarian{% endif %}
+            {% if app.request.get('category') == 'desserts' %}Desserts{% endif %}
+            category. Try a different search or browse all recipes.
+          {% elseif app.request.get('category') %}
+            No 
+            {% if app.request.get('category') == 'quick' %}Quick & Easy{% endif %}
+            {% if app.request.get('category') == 'vegetarian' %}Vegetarian{% endif %}
+            {% if app.request.get('category') == 'desserts' %}Desserts{% endif %}
+            recipes found. Try browsing all recipes or a different category.
+          {% elseif app.request.get('q') %}
+            No recipes match your search "{{ app.request.get('q') }}". Try different keywords or browse all recipes.
+          {% else %}
+            Start your culinary journey by creating your first recipe.
+          {% endif %}
+        </p>
+        
+        <div class="flex flex-col gap-3 md:gap-4">
+          {% if app.request.get('category') or app.request.get('q') %}
+            <a href="{{ path('app_home') }}" 
+               class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-zinc-600 text-white font-medium rounded-xl hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow touch-target">
+              ← Back to All Recipes
+            </a>
+          {% endif %}
+          
+          {% if app.user %}
+            <a href="{{ path('app_recipe_new') }}" 
+               class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow touch-target">
+              ➕ {% if app.request.get('category') or app.request.get('q') %}Create Recipe{% else %}Create Your First Recipe{% endif %}
+            </a>
+          {% else %}
+            <a href="{{ path('app_register') }}" 
+               class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow touch-target">
+              🚀 Join to Share Recipes
+            </a>
+          {% endif %}
+        </div>
+      </div>
     </div>
   {% endif %}
 </section>
+
+{# Custom Delete Confirmation Modal #}
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mt-2">Delete Recipe</h3>
+      <div class="mt-2 px-7 py-3">
+        <p class="text-sm text-gray-500">
+          Are you sure you want to delete the recipe 
+          <span id="recipeNameSpan" class="font-semibold text-gray-900"></span>?
+        </p>
+        <p class="text-xs text-red-600 mt-2">
+          ⚠️ This action cannot be undone. All recipe data will be permanently removed.
+        </p>
+      </div>
+      <div class="items-center px-4 py-3">
+        <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+          Delete
+        </button>
+        <button id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+  {{ parent() }}
+  <script>
+    // Custom Delete Modal Logic
+    let currentForm = null;
+
+    function showDeleteModal(recipeName, form) {
+      currentForm = form;
+      document.getElementById('recipeNameSpan').textContent = recipeName;
+      document.getElementById('deleteModal').classList.remove('hidden');
+      
+      // Focus the cancel button for better UX
+      document.getElementById('cancelDelete').focus();
+    }
+
+    function hideDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+      currentForm = null;
+    }
+
+    // Event listeners for modal
+    document.addEventListener('DOMContentLoaded', function() {
+      // Delete button click handlers
+      document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          const form = this.closest('.delete-form');
+          const recipeName = form.dataset.recipeName;
+          showDeleteModal(recipeName, form);
+        });
+      });
+
+      // Confirm delete
+      document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (currentForm) {
+          currentForm.submit();
+        }
+        hideDeleteModal();
+      });
+
+      // Cancel delete
+      document.getElementById('cancelDelete').addEventListener('click', function() {
+        hideDeleteModal();
+      });
+
+      // Close modal when clicking outside
+      document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          hideDeleteModal();
+        }
+      });
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
+          hideDeleteModal();
+        }
+      });
+    });
+
+    function toggleAdvancedFilters() {
+      const filters = document.getElementById('advanced-filters');
+      const chevron = document.getElementById('filter-chevron');
+      
+      if (filters.classList.contains('hidden')) {
+        filters.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        filters.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show advanced filters if any advanced criteria are set
+      const hasAdvancedFilters = {{ 
+        (searchCriteria is defined and searchCriteria is not empty) and (
+          (searchCriteria.category is defined and searchCriteria.category) or 
+          (searchCriteria.difficulty is defined and searchCriteria.difficulty) or 
+          (searchCriteria.maxPrepTime is defined and searchCriteria.maxPrepTime) or 
+          (searchCriteria.minRating is defined and searchCriteria.minRating) or 
+          (searchCriteria.dietaryRestrictions is defined and searchCriteria.dietaryRestrictions is not empty)
+        ) ? 'true' : 'false' 
+      }};
+      
+      if (hasAdvancedFilters) {
+        toggleAdvancedFilters();
+      }
+
+      // Star rating functionality for difficulty
+      document.querySelectorAll('.difficulty-stars').forEach(container => {
+        const stars = container.querySelectorAll('.difficulty-star');
+        const input = container.querySelector('.difficulty-input');
+        const label = container.querySelector('.difficulty-label');
+        const clearBtn = container.querySelector('.difficulty-clear');
+
+        stars.forEach((star, index) => {
+          star.addEventListener('click', function(e) {
+            e.preventDefault();
+            const rating = parseInt(this.dataset.rating);
+            input.value = rating;
+            updateDifficultyStars(container, rating);
+            updateDifficultyLabel(label, rating);
+            clearBtn.classList.remove('hidden');
+          });
+        });
+
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            input.value = '';
+            updateDifficultyStars(container, 0);
+            updateDifficultyLabel(label, 0);
+            this.classList.add('hidden');
+          });
+        }
+      });
+
+      // Star rating functionality for minimum rating
+      document.querySelectorAll('.rating-stars').forEach(container => {
+        const stars = container.querySelectorAll('.rating-star');
+        const input = container.querySelector('.rating-input');
+        const label = container.querySelector('.rating-label');
+        const clearBtn = container.querySelector('.rating-clear');
+
+        stars.forEach((star, index) => {
+          star.addEventListener('click', function(e) {
+            e.preventDefault();
+            const rating = parseInt(this.dataset.rating);
+            input.value = rating;
+            updateRatingStars(container, rating);
+            updateRatingLabel(label, rating);
+            clearBtn.classList.remove('hidden');
+          });
+        });
+
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            input.value = '';
+            updateRatingStars(container, 0);
+            updateRatingLabel(label, 0);
+            this.classList.add('hidden');
+          });
+        }
+      });
+
+      // Prep time presets
+      document.querySelectorAll('.prep-time-preset').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          const time = this.dataset.time;
+          const input = this.closest('.prep-time-input').querySelector('input[type="number"]');
+          input.value = time;
+          input.focus();
+        });
+      });
+
+      // Dietary restrictions styling
+      document.querySelectorAll('.dietary-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const label = this.closest('.dietary-option');
+          const checkmark = label.querySelector('.dietary-checkmark');
+          
+          if (this.checked) {
+            label.classList.add('border-orange-500', 'bg-orange-50');
+            checkmark.classList.remove('opacity-0');
+          } else {
+            label.classList.remove('border-orange-500', 'bg-orange-50');
+            checkmark.classList.add('opacity-0');
+          }
+        });
+      });
+    });
+
+    function updateDifficultyStars(container, rating) {
+      const stars = container.querySelectorAll('.difficulty-star');
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('text-gray-300');
+          star.classList.add('text-yellow-400');
+        } else {
+          star.classList.remove('text-yellow-400');
+          star.classList.add('text-gray-300');
+        }
+      });
+    }
+
+    function updateDifficultyLabel(label, rating) {
+      if (rating === 0) {
+        label.textContent = 'Any difficulty';
+      } else {
+        const levels = ['', 'Very Easy', 'Easy', 'Medium', 'Hard', 'Very Hard'];
+        label.textContent = `${rating} star${rating !== 1 ? 's' : ''} - ${levels[rating]}`;
+      }
+    }
+
+    function updateRatingStars(container, rating) {
+      const stars = container.querySelectorAll('.rating-star');
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('text-gray-300');
+          star.classList.add('text-yellow-400');
+        } else {
+          star.classList.remove('text-yellow-400');
+          star.classList.add('text-gray-300');
+        }
+      });
+    }
+
+    function updateRatingLabel(label, rating) {
+      if (rating === 0) {
+        label.textContent = 'Any rating';
+      } else {
+        label.textContent = `${rating}+ stars minimum`;
+      }
+    }
+  </script>
 {% endblock %}
